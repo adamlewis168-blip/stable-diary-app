@@ -30,16 +30,15 @@
     <div id="screen-gate">
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
-        <input type="text" id="gate-pass" class="input-field" placeholder="Enter Code (###)...">
-        <!-- Direct safety switch bypassing name errors -->
-        <button class="btn" onclick="let i = document.getElementById('gate-pass').value.trim(); if(i==='123'||i==='321'){ localStorage.setItem('yard_role', i==='321'?'admin':'livery'); location.reload(); } else { document.getElementById('gate-error').innerText='❌ Invalid Code. Use 123 or 321.'; }">Unlock App</button>
+        <input type="text" id="gate-pass" class="input-field" placeholder="Enter password (123 or 321)...">
+        <button class="btn" onclick="processLoginDirect()">Unlock App</button>
         <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
     
     <!-- SCREEN 2: MAIN APP -->
     <div id="screen-main" class="hidden">
         <h1 id="app-title">Nine Gates EC Portal</h1>
-        <div id="status-text" class="status-msg">Loading stable data...</div>
+        <div id="status-text" class="status-msg">Connecting to database...</div>
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
             <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
@@ -66,8 +65,7 @@
                 <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Horse</button>
             </div>
         </div>
-        <!-- Safety Clear Switch -->
-        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload();">Lock App</button>
+        <button class="btn btn-secondary" onclick="lockApp()">Lock App</button>
     </div>
 </div>
 <script>
@@ -83,13 +81,36 @@
         }
     }
 
+    window.processLoginDirect = function() {
+        const input = document.getElementById('gate-pass').value.trim();
+        if (input === "321") {
+            currentRole = "admin";
+            localStorage.setItem('yard_role', 'admin');
+            launchPortal();
+        } else if (input === "123") {
+            currentRole = "livery";
+            localStorage.setItem('yard_role', 'livery');
+            launchPortal();
+        } else {
+            document.getElementById('gate-error').innerText = "❌ Invalid Code. Use 123 or 321.";
+        }
+    }
+
     function launchPortal() {
+        // Instant visual switch so the button never freezes
         document.getElementById('screen-gate').classList.add('hidden');
         document.getElementById('screen-main').classList.remove('hidden');
         document.getElementById('app-title').innerText = currentRole === "admin" ? "Nine Gates EC Manager 👑" : "Nine Gates EC Portal 🐴";
         document.getElementById('admin-section').className = currentRole === "admin" ? "" : "hidden";
+        
+        // Fetch background database metrics
         fetchDiary();
         fetchHorses();
+    }
+
+    window.lockApp = function() {
+        localStorage.clear();
+        location.reload();
     }
 
     window.switchTab = function(tab) {
@@ -110,7 +131,10 @@
         return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
             method: 'GET',
             headers: { 'apikey': SUPABASE_KEY }
-        }).then(res => res.json());
+        }).then(res => {
+            if(!res.ok) throw new Error("HTTP error " + res.status);
+            return res.json();
+        });
     }
 
     function supabaseInsert(endpoint, payload) {
@@ -136,8 +160,9 @@
                 });
             }
             document.getElementById('status-text').innerText = "☁️ Real-time Cloud Synced";
-        }).catch(() => {
-            document.getElementById('status-text').innerText = "⚠️ Error loading data.";
+        }).catch((err) => {
+            console.error(err);
+            document.getElementById('status-text').innerText = "⚠️ RLS Security is blocking connection. Checking locks...";
         });
     }
 
@@ -155,7 +180,7 @@
                     </div>`;
                 });
             }
-        });
+        }).catch(err => console.error(err));
     }
 
     window.saveDiaryEntry = function() {
@@ -168,17 +193,3 @@
         if(!payload.booking_date || !payload.horse_or_person) return alert("Please fill out date and name fields!");
         supabaseInsert('yard_diary', payload).then(() => {
             fetchDiary();
-            document.getElementById('diary-horse').value = "";
-            document.getElementById('diary-notes').value = "";
-        });
-    }
-
-    window.saveHorseProfile = function() {
-        const payload = {
-            name: document.getElementById('horse-name').value,
-            owner_name: document.getElementById('horse-owner').value,
-            feed_notes: document.getElementById('horse-feed').value,
-            rug_instructions: document.getElementById('horse-rug').value
-        };
-        if(!payload.name || !payload.owner_name) return alert("Horse name and Owner are required!");
-        supabaseInsert('horses', payload).then(() => {
