@@ -14,13 +14,26 @@
         .btn:hover { background: #005bb5; }
         .btn-secondary { background: #e8e8ed; color: #1d1d1f; margin-top: 10px; }
         .input-field { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+        
+        /* Navigation Styles */
         .tab-menu { display: flex; justify-content: space-around; border-bottom: 2px solid #e8e8ed; margin-bottom: 20px; }
-        .tab-menu .tab-btn { background: none; border: none; padding: 10px 20px; font-size: 16px; font-weight: 600; color: #86868b; cursor: pointer; }
+        .tab-menu .tab-btn { background: none; border: none; padding: 10px 15px; font-size: 15px; font-weight: 600; color: #86868b; cursor: pointer; }
         .tab-menu .tab-btn.active { color: #0071e3; border-bottom: 3px solid #0071e3; }
+        
+        /* Layout Panels */
         .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; }
         .card.admin-card { border-left-color: #ff9500; }
         .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
         .card p { margin: 0; font-size: 14px; color: #86868b; }
+        
+        /* Chores Checklist System */
+        .chore-section { margin-top: 15px; }
+        .chore-section h3 { border-bottom: 2px solid #e8e8ed; padding-bottom: 5px; color: #86868b; font-size: 16px; }
+        .chore-item { display: flex; align-items: center; padding: 12px; background: #f5f5f7; margin-bottom: 8px; border-radius: 10px; cursor: pointer; user-select: none; }
+        .chore-item.done { background: #d4edda; color: #155724; text-decoration: line-through; }
+        .checkbox { width: 20px; height: 20px; border: 2px solid #86868b; border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .chore-item.done .checkbox { border-color: #28a745; background: #28a745; color: white; }
+        .chore-item.done .checkbox::after { content: "✓"; }
     </style>
 </head>
 <body>
@@ -40,9 +53,11 @@
         
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
+            <button id="tab-chores-btn" class="tab-btn" onclick="switchTab('chores')">📋 Chores</button>
             <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
         </div>
         
+        <!-- TAB 1: DIARY VIEW -->
         <div id="tab-diary">
             <div id="diary-list">
                 <div class="card">
@@ -58,6 +73,23 @@
             </div>
         </div>
         
+        <!-- TAB 2: CHORES VIEW -->
+        <div id="tab-chores" class="hidden">
+            <div class="chore-section">
+                <h3>🌅 Morning Routine</h3>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Turn out Biscuit & Storm</div>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Morning feeds checked</div>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Water buckets topped up</div>
+            </div>
+            <div class="chore-section">
+                <h3>🌙 Evening Routine</h3>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Bring in / Rug check</div>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Muck out stables</div>
+                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Skip out main arena</div>
+            </div>
+        </div>
+        
+        <!-- TAB 3: HORSES VIEW -->
         <div id="tab-horses" class="hidden">
             <div id="horses-list">
                 <div class="card">
@@ -121,18 +153,22 @@
         location.reload();
     }
 
+    window.toggleChore = function(element) {
+        element.classList.toggle('done');
+    }
+
     window.switchTab = function(tab) {
-        if (tab === 'diary') {
-            document.getElementById('tab-diary').classList.remove('hidden');
-            document.getElementById('tab-horses').classList.add('hidden');
-            document.getElementById('tab-diary-btn').classList.add('active');
-            document.getElementById('tab-horses-btn').classList.remove('active');
-        } else {
-            document.getElementById('tab-diary').classList.add('hidden');
-            document.getElementById('tab-horses').classList.remove('hidden');
-            document.getElementById('tab-diary-btn').classList.remove('active');
-            document.getElementById('tab-horses-btn').classList.add('active');
-        }
+        // Reset all tabs to hidden and active labels off
+        document.getElementById('tab-diary').classList.add('hidden');
+        document.getElementById('tab-chores').classList.add('hidden');
+        document.getElementById('tab-horses').classList.add('hidden');
+        document.getElementById('tab-diary-btn').classList.remove('active');
+        document.getElementById('tab-chores-btn').classList.remove('active');
+        document.getElementById('tab-horses-btn').classList.remove('active');
+
+        // Show selected panel
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        document.getElementById('tab-' + tab + '-btn').classList.add('active');
     }
 </script>
 </body>
