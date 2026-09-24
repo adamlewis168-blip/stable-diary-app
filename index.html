@@ -26,13 +26,17 @@
 </head>
 <body>
 <div class="container">
+    <!-- SCREEN 1: LOGIN -->
     <div id="screen-gate">
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
         <input type="text" id="gate-pass" class="input-field" placeholder="Enter password (123 or 321)...">
-        <button class="btn" onclick="processLogin()">Unlock App</button>
+        <!-- Direct safety switch bypassing name errors -->
+        <button class="btn" onclick="let i = document.getElementById('gate-pass').value.trim(); if(i==='123'||i==='321'){ localStorage.setItem('yard_role', i==='321'?'admin':'livery'); location.reload(); } else { document.getElementById('gate-error').innerText='❌ Invalid Code. Use 123 or 321.'; }">Unlock App</button>
         <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
+    
+    <!-- SCREEN 2: MAIN APP -->
     <div id="screen-main" class="hidden">
         <h1 id="app-title">Nine Gates EC Portal</h1>
         <div id="status-text" class="status-msg">Loading stable data...</div>
@@ -62,7 +66,8 @@
                 <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Horse</button>
             </div>
         </div>
-        <button class="btn btn-secondary" onclick="lockApp()">Lock App</button>
+        <!-- Safety Clear Switch -->
+        <button class="btn btn-secondary" onclick="localStorage.clear(); location.reload();">Lock App</button>
     </div>
 </div>
 <script>
@@ -78,21 +83,6 @@
         }
     }
 
-    window.processLogin = function() {
-        const input = document.getElementById('gate-pass').value.trim();
-        if (input === "321") {
-            currentRole = "admin";
-            localStorage.setItem('yard_role', 'admin');
-            launchPortal();
-        } else if (input === "123") {
-            currentRole = "livery";
-            localStorage.setItem('yard_role', 'livery');
-            launchPortal();
-        } else {
-            document.getElementById('gate-error').innerText = "❌ Invalid Code. Try 123 or 321.";
-        }
-    }
-
     function launchPortal() {
         document.getElementById('screen-gate').classList.add('hidden');
         document.getElementById('screen-main').classList.remove('hidden');
@@ -100,11 +90,6 @@
         document.getElementById('admin-section').className = currentRole === "admin" ? "" : "hidden";
         fetchDiary();
         fetchHorses();
-    }
-
-    window.lockApp = function() {
-        localStorage.clear();
-        location.reload();
     }
 
     window.switchTab = function(tab) {
@@ -193,3 +178,7 @@
             name: document.getElementById('horse-name').value,
             owner_name: document.getElementById('horse-owner').value,
             feed_notes: document.getElementById('horse-feed').value,
+            rug_instructions: document.getElementById('horse-rug').value
+        };
+        if(!payload.name || !payload.owner_name) return alert("Horse name and Owner are required!");
+        supabaseInsert('horses', payload).then(() => {
