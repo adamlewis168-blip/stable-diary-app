@@ -39,7 +39,7 @@
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
         <input type="password" id="gate-pass" class="input-field" placeholder="Enter password...">
-        <button class="btn" onclick="checkGateCode()">Unlock App</button>
+        <button class="btn" id="unlock-btn" onclick="checkGateCode()">Unlock App</button>
         <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
 
@@ -90,9 +90,9 @@
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
 
-    // Secure encrypted password hashes
-    const LIVERY_HASH = "8438f40af8ad36dc90237479f75c1fa20df128cb113ed6a5326cf6489997a4a7"; // Scrambled "StableGate2026"
-    const ADMIN_HASH = "029208ee43ab7c07ba848f5faafa6fc29b807d693dad6ed4736eb1f71409b389";  // Scrambled "AdminManager2026"
+    // Secure encrypted hashes for super quick passwords
+    const LIVERY_HASH = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"; // Scrambled "123"
+    const ADMIN_HASH = "8d23cf6c86e834a7aa6eded54c26ce2bb2e74903538c61bdd5d2197997ab2f72";  // Scrambled "321"
 
     let currentRole = "livery";
 
@@ -111,8 +111,13 @@
     }
 
     async function checkGateCode() {
+        document.getElementById('gate-error').innerText = "Processing...";
         const input = document.getElementById('gate-pass').value;
-        if (!input) return;
+        if (!input) {
+            document.getElementById('gate-error').innerText = "❌ Please enter a code.";
+            return;
+        }
+        
         const inputHash = await sha256(input);
         
         if (inputHash === ADMIN_HASH) {
@@ -124,7 +129,7 @@
             localStorage.setItem('yard_role', 'livery');
             launchPortal();
         } else {
-            document.getElementById('gate-error').innerText = "❌ Invalid Gate Code. Try again.";
+            document.getElementById('gate-error').innerText = "❌ Invalid Gate Code. Try 123 or 321.";
         }
     }
 
@@ -206,6 +211,3 @@
 
     function fetchHorses() {
         supabaseFetch('horses?order=name.asc')
-        .then(data => {
-            const list = document.getElementById('horses-list');
-            list.innerHTML = (!data || data.length === 0) ? "<p>No horse metrics logged.</p>" : "";
