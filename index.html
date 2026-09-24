@@ -30,7 +30,7 @@
     <div id="screen-gate">
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
-        <input type="text" id="gate-pass" class="input-field" placeholder="Enter password (123 or 321)...">
+        <input type="text" id="gate-pass" class="input-field" placeholder="Enter Code (###)...">
         <!-- Direct safety switch bypassing name errors -->
         <button class="btn" onclick="let i = document.getElementById('gate-pass').value.trim(); if(i==='123'||i==='321'){ localStorage.setItem('yard_role', i==='321'?'admin':'livery'); location.reload(); } else { document.getElementById('gate-error').innerText='❌ Invalid Code. Use 123 or 321.'; }">Unlock App</button>
         <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
