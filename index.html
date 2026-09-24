@@ -21,7 +21,6 @@
         .card.admin-card { border-left-color: #ff9500; }
         .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
         .card p { margin: 0; font-size: 14px; color: #86868b; }
-        .status-msg { text-align: center; font-size: 12px; color: #86868b; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -38,39 +37,53 @@
     <!-- SCREEN 2: MAIN APP -->
     <div id="screen-main" class="hidden">
         <h1 id="app-title">Nine Gates EC Portal</h1>
-        <div id="status-text" class="status-msg">Connecting to database...</div>
+        
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
             <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
         </div>
+        
         <div id="tab-diary">
-            <div id="diary-list"></div>
-            <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
-            <h3>Book Arena / Log Event</h3>
-            <input type="date" id="diary-date" class="input-field">
-            <input type="time" id="diary-time" class="input-field">
-            <input type="text" id="diary-horse" class="input-field" placeholder="Horse or Rider Name">
-            <input type="text" id="diary-notes" class="input-field" placeholder="Activity Notes">
-            <button class="btn" onclick="saveDiaryEntry()">Add to Diary</button>
+            <div id="diary-list">
+                <div class="card">
+                    <h4>📅 24/09/2026 @ 10:00</h4>
+                    <p><strong>Rider/Horse:</strong> Adam / Biscuit</p>
+                    <p><strong>Note:</strong> Arena Booking</p>
+                </div>
+                <div class="card">
+                    <h4>📅 25/09/2026 @ 14:00</h4>
+                    <p><strong>Rider/Horse:</strong> Sarah / Storm</p>
+                    <p><strong>Note:</strong> Farrier Visit</p>
+                </div>
+            </div>
         </div>
+        
         <div id="tab-horses" class="hidden">
-            <div id="horses-list"></div>
+            <div id="horses-list">
+                <div class="card">
+                    <h4>🐴 Biscuit (Adam)</h4>
+                    <p><strong>🥣 Feed Room:</strong> 1 scoop chaff morning only</p>
+                    <p><strong>🧥 Rugs:</strong> Lightweight turnout if raining</p>
+                </div>
+                <div class="card">
+                    <h4>🐴 Storm (Sarah)</h4>
+                    <p><strong>🥣 Feed Room:</strong> High fibre nuts</p>
+                    <p><strong>🧥 Rugs:</strong> Heavyweight stable rug at night</p>
+                </div>
+            </div>
             <div id="admin-section" class="hidden">
                 <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
                 <h3 style="color:#ff9500;">Manager Panel: Add New Horse</h3>
-                <input type="text" id="horse-name" class="input-field" placeholder="Horse Name">
-                <input type="text" id="horse-owner" class="input-field" placeholder="Owner Name">
-                <input type="text" id="horse-feed" class="input-field" placeholder="Feeding Instructions">
-                <input type="text" id="horse-rug" class="input-field" placeholder="Rug Instructions">
-                <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Horse</button>
+                <input type="text" class="input-field" placeholder="Horse Name">
+                <button class="btn" style="background:#ff9500;">Register Horse (Disabled in Test)</button>
             </div>
         </div>
+        
         <button class="btn btn-secondary" onclick="lockApp()">Lock App</button>
     </div>
 </div>
+
 <script>
-    const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
     let currentRole = "livery";
 
     window.onload = function() {
@@ -97,15 +110,10 @@
     }
 
     function launchPortal() {
-        // Instant visual switch so the button never freezes
         document.getElementById('screen-gate').classList.add('hidden');
         document.getElementById('screen-main').classList.remove('hidden');
         document.getElementById('app-title').innerText = currentRole === "admin" ? "Nine Gates EC Manager 👑" : "Nine Gates EC Portal 🐴";
         document.getElementById('admin-section').className = currentRole === "admin" ? "" : "hidden";
-        
-        // Fetch background database metrics
-        fetchDiary();
-        fetchHorses();
     }
 
     window.lockApp = function() {
@@ -126,70 +134,6 @@
             document.getElementById('tab-horses-btn').classList.add('active');
         }
     }
-
-    function supabaseFetch(endpoint) {
-        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
-            method: 'GET',
-            headers: { 'apikey': SUPABASE_KEY }
-        }).then(res => {
-            if(!res.ok) throw new Error("HTTP error " + res.status);
-            return res.json();
-        });
-    }
-
-    function supabaseInsert(endpoint, payload) {
-        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
-            method: 'POST',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-    }
-
-    function fetchDiary() {
-        supabaseFetch('yard_diary?order=booking_date.asc,start_time.asc')
-        .then(data => {
-            const list = document.getElementById('diary-list');
-            list.innerHTML = (!data || data.length === 0) ? "<p>No entries found.</p>" : "";
-            if(data && data.length > 0) {
-                data.forEach(item => {
-                    list.innerHTML += `<div class="card">
-                        <h4>📅 ${item.booking_date} @ ${item.start_time.slice(0,5)}</h4>
-                        <p><strong>Rider/Horse:</strong> ${item.horse_or_person}</p>
-                        <p><strong>Note:</strong> ${item.activity_notes}</p>
-                    </div>`;
-                });
-            }
-            document.getElementById('status-text').innerText = "☁️ Real-time Cloud Synced";
-        }).catch((err) => {
-            console.error(err);
-            document.getElementById('status-text').innerText = "⚠️ RLS Security is blocking connection. Checking locks...";
-        });
-    }
-
-    function fetchHorses() {
-        supabaseFetch('horses?order=name.asc')
-        .then(data => {
-            const list = document.getElementById('horses-list');
-            list.innerHTML = (!data || data.length === 0) ? "<p>No horses found.</p>" : "";
-            if(data && data.length > 0) {
-                data.forEach(item => {
-                    list.innerHTML += `<div class="card ${currentRole === 'admin' ? 'admin-card' : ''}">
-                        <h4>🐴 ${item.name} (${item.owner_name})</h4>
-                        <p><strong>🥣 Feed Room:</strong> ${item.feed_notes || 'None'}</p>
-                        <p><strong>🧥 Rugs:</strong> ${item.rug_instructions || 'None'}</p>
-                    </div>`;
-                });
-            }
-        }).catch(err => console.error(err));
-    }
-
-    window.saveDiaryEntry = function() {
-        const payload = {
-            booking_date: document.getElementById('diary-date').value,
-            start_time: document.getElementById('diary-time').value,
-            horse_or_person: document.getElementById('diary-horse').value,
-            activity_notes: document.getElementById('diary-notes').value
-        };
-        if(!payload.booking_date || !payload.horse_or_person) return alert("Please fill out date and name fields!");
-        supabaseInsert('yard_diary', payload).then(() => {
-            fetchDiary();
+</script>
+</body>
+</html>
