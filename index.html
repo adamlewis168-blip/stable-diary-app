@@ -39,7 +39,7 @@
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
         <input type="text" id="gate-pass" class="input-field" placeholder="Enter password (try 123)...">
-        <button class="btn" onclick="checkGateCodeDirect()">Unlock App</button>
+        <button class="btn" onclick="unlockGateNow()">Unlock App</button>
         <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
 
@@ -87,7 +87,7 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_URL = "https://vujdxoqknvhlyqwkeiyz.supabase.co";
     const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
 
     let currentRole = "livery";
@@ -100,10 +100,11 @@
         }
     }
 
-    // Direct string matching function to completely sidestep cryptographic timing issues while testing
-    function checkGateCodeDirect() {
+    // Cache-Busted Access Switch
+    window.unlockGateNow = function() {
         const input = document.getElementById('gate-pass').value.trim();
-        document.getElementById('gate-error').innerText = "Processing matches...";
+        document.getElementById('gate-error').style.color = "orange";
+        document.getElementById('gate-error').innerText = "Matching code...";
         
         if (input === "321") {
             currentRole = "admin";
@@ -114,7 +115,8 @@
             localStorage.setItem('yard_role', 'livery');
             launchPortal();
         } else {
-            document.getElementById('gate-error').innerText = "❌ Invalid. Use 123 or 321.";
+            document.getElementById('gate-error').style.color = "red";
+            document.getElementById('gate-error').innerText = "❌ Invalid. Try 123 or 321.";
         }
     }
 
@@ -205,9 +207,3 @@
                             <p><strong>🥣 Feed Room:</strong> ${item.feed_notes || 'None'}</p>
                             <p><strong>🧥 Rug Instructions:</strong> ${item.rug_instructions || 'None'}</p>
                         </div>
-                    `;
-                });
-            }
-        });
-    }
-
