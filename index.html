@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nine Gates EC Stable Diary</title>
+    <title>Nine Gates EC Stable Portal</title>
     <meta name="mobile-web-app-capable" content="yes">
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #1d1d1f; }
@@ -13,163 +13,165 @@
         .btn { display: block; width: 100%; padding: 15px; font-size: 16px; border: none; border-radius: 12px; background: #0071e3; color: white; cursor: pointer; font-weight: 600; text-align: center; margin-top: 15px; box-sizing: border-box; }
         .btn:hover { background: #005bb5; }
         .btn-secondary { background: #e8e8ed; color: #1d1d1f; margin-top: 10px; }
-        .input-field { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+        .input-field { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: white; }
         
-        /* Navigation Styles */
         .tab-menu { display: flex; justify-content: space-around; border-bottom: 2px solid #e8e8ed; margin-bottom: 20px; }
-        .tab-menu .tab-btn { background: none; border: none; padding: 10px 15px; font-size: 15px; font-weight: 600; color: #86868b; cursor: pointer; }
+        .tab-menu .tab-btn { background: none; border: none; padding: 10px 10px; font-size: 14px; font-weight: 600; color: #86868b; cursor: pointer; }
         .tab-menu .tab-btn.active { color: #0071e3; border-bottom: 3px solid #0071e3; }
         
-        /* Layout Panels */
-        .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; }
-        .card.admin-card { border-left-color: #ff9500; }
-        .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
-        .card p { margin: 0; font-size: 14px; color: #86868b; }
+        /* Notice Board Alerts */
+        .alert-banner { background: #ff3b30; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-bottom: 15px; text-align: center; box-shadow: 0 2px 8px rgba(255,59,48,0.2); }
+        .notice-board { background: #fbfbfd; border: 1px solid #e8e8ed; border-radius: 12px; padding: 15px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; }
+        .notice-item { border-bottom: 1px solid #e8e8ed; padding: 8px 0; font-size: 13px; }
+        .notice-item:last-child { border-bottom: none; }
         
-        /* Chores Checklist System */
-        .chore-section { margin-top: 15px; }
-        .chore-section h3 { border-bottom: 2px solid #e8e8ed; padding-bottom: 5px; color: #86868b; font-size: 16px; }
-        .chore-item { display: flex; align-items: center; padding: 12px; background: #f5f5f7; margin-bottom: 8px; border-radius: 10px; cursor: pointer; user-select: none; }
-        .chore-item.done { background: #d4edda; color: #155724; text-decoration: line-through; }
-        .checkbox { width: 20px; height: 20px; border: 2px solid #86868b; border-radius: 6px; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .chore-item.done .checkbox { border-color: #28a745; background: #28a745; color: white; }
-        .chore-item.done .checkbox::after { content: "✓"; }
+        .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; position: relative; }
+        .card.admin-card { border-left-color: #ff9500; }
+        .card.urgent-card { border-left-color: #ff3b30; background: #fff5f5; }
+        .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
+        .card p { margin: 0; font-size: 13px; color: #86868b; line-height: 1.4; }
+        .status-msg { text-align: center; font-size: 12px; color: #86868b; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
-    <!-- SCREEN 1: LOGIN -->
-    <div id="screen-gate">
-        <h1>🐴 Nine Gates EC</h1>
-        <h2 style="font-size: 16px; color:#86868b;">Enter Gate Code to Access</h2>
-        <input type="text" id="gate-pass" class="input-field" placeholder="Enter password (123 or 321)...">
-        <button class="btn" onclick="processLoginDirect()">Unlock App</button>
-        <div id="gate-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
-    </div>
     
-    <!-- SCREEN 2: MAIN APP -->
+    <!-- SCREEN 1: SECURE USER LOGIN -->
+    <div id="screen-login">
+        <h1>🐴 Nine Gates EC</h1>
+        <h2 style="font-size: 15px; color:#86868b;">Sign in with your Yard Credentials</h2>
+        <input type="text" id="login-username" class="input-field" placeholder="Username (e.g. adam)">
+        <input type="password" id="login-pin" class="input-field" placeholder="4-Digit Security PIN">
+        <button class="btn" onclick="executeUserLogin()">Sign In</button>
+        <div id="login-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
     <div id="screen-main" class="hidden">
-        <h1 id="app-title">Nine Gates EC Portal</h1>
+        <!-- Live Emergency Broadcast Alert Banner -->
+        <div id="emergency-banner" class="alert-banner hidden">⚠️ NOTICE: Loading alerts...</div>
+        
+        <h1 id="portal-title">Nine Gates Portal</h1>
+        <div id="status-text" class="status-msg">Syncing data logs...</div>
         
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
-            <button id="tab-chores-btn" class="tab-btn" onclick="switchTab('chores')">📋 Chores</button>
             <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
+            <button id="tab-notice-btn" class="tab-btn" onclick="switchTab('notice')">📣 Board</button>
+            <button id="tab-account-btn" class="tab-btn" onclick="switchTab('account')">🔒 Security</button>
         </div>
-        
-        <!-- TAB 1: DIARY VIEW -->
+
+        <!-- TAB 1: CALENDAR DIARY -->
         <div id="tab-diary">
-            <div id="diary-list">
-                <div class="card">
-                    <h4>📅 24/09/2026 @ 10:00</h4>
-                    <p><strong>Rider/Horse:</strong> Adam / Biscuit</p>
-                    <p><strong>Note:</strong> Arena Booking</p>
-                </div>
-                <div class="card">
-                    <h4>📅 25/09/2026 @ 14:00</h4>
-                    <p><strong>Rider/Horse:</strong> Sarah / Storm</p>
-                    <p><strong>Note:</strong> Farrier Visit</p>
-                </div>
-            </div>
+            <div id="diary-list"></div>
+            <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
+            <h3>Book Facility</h3>
+            <select id="diary-facility" class="input-field">
+                <option value="Main Manege">Main Manege 🏟️</option>
+                <option value="Small Manege">Small Manege 🪵</option>
+            </select>
+            <input type="date" id="diary-date" class="input-field">
+            <input type="time" id="diary-time" class="input-field">
+            <input type="text" id="diary-notes" class="input-field" placeholder="Activity Notes">
+            <button class="btn" onclick="saveDiaryEntry()">Book Arena</button>
         </div>
-        
-        <!-- TAB 2: CHORES VIEW -->
-        <div id="tab-chores" class="hidden">
-            <div class="chore-section">
-                <h3>🌅 Morning Routine</h3>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Turn out Biscuit & Storm</div>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Morning feeds checked</div>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Water buckets topped up</div>
-            </div>
-            <div class="chore-section">
-                <h3>🌙 Evening Routine</h3>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Bring in / Rug check</div>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Muck out stables</div>
-                <div class="chore-item" onclick="toggleChore(this)"><div class="checkbox"></div>Skip out main arena</div>
-            </div>
-        </div>
-        
-        <!-- TAB 3: HORSES VIEW -->
+
+        <!-- TAB 2: PERSONALIZED HORSES METRICS -->
         <div id="tab-horses" class="hidden">
-            <div id="horses-list">
-                <div class="card">
-                    <h4>🐴 Biscuit (Adam)</h4>
-                    <p><strong>🥣 Feed Room:</strong> 1 scoop chaff morning only</p>
-                    <p><strong>🧥 Rugs:</strong> Lightweight turnout if raining</p>
-                </div>
-                <div class="card">
-                    <h4>🐴 Storm (Sarah)</h4>
-                    <p><strong>🥣 Feed Room:</strong> High fibre nuts</p>
-                    <p><strong>🧥 Rugs:</strong> Heavyweight stable rug at night</p>
-                </div>
-            </div>
-            <div id="admin-section" class="hidden">
-                <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
-                <h3 style="color:#ff9500;">Manager Panel: Add New Horse</h3>
-                <input type="text" class="input-field" placeholder="Horse Name">
-                <button class="btn" style="background:#ff9500;">Register Horse (Disabled in Test)</button>
+            <div id="horses-list">Loading records...</div>
+            
+            <!-- Admin Profile Registration Engine -->
+            <div id="admin-horse-section" class="hidden">
+                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
+                <h3 style="color:#ff9500;">👑 Manager Panel: Register New Horse</h3>
+                <input type="text" id="horse-name" class="input-field" placeholder="Horse Name">
+                <input type="text" id="horse-owner" class="input-field" placeholder="Owner Username (matches client login)">
+                <input type="text" id="horse-feed" class="input-field" placeholder="Feeding Instructions">
+                <input type="text" id="horse-rug" class="input-field" placeholder="Rug Instructions">
+                <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Profile</button>
             </div>
         </div>
-        
-        <button class="btn btn-secondary" onclick="lockApp()">Lock App</button>
+
+        <!-- TAB 3: NOTICE BOARD FEED -->
+        <div id="tab-notice" class="hidden">
+            <h3>📢 Yard Notice History</h3>
+            <div id="full-notice-list" class="notice-board">Loading updates...</div>
+            
+            <!-- Admin Notice Broadcasting Station -->
+            <div id="admin-notice-section" class="hidden">
+                <h3 style="color:#ff9500;">Broadcast Yard Alert</h3>
+                <input type="text" id="notice-msg" class="input-field" placeholder="Type bulletin message...">
+                <label style="font-size:14px; font-weight:bold; display:block; margin: 5px 0;">
+                    <input type="checkbox" id="notice-urgent"> Mark as Urgent Broadcast (Triggers Red Top Banner)
+                </label>
+                <button class="btn" style="background:#ff9500;" onclick="broadcastNotice()">Post Bulletin</button>
+            </div>
+        </div>
+
+        <!-- TAB 4: INDIVIDUAL SECURITY SETTINGS -->
+        <div id="tab-account" class="hidden">
+            <h3>🔒 Customize Security PIN</h3>
+            <p style="font-size:13px; color:#86868b; margin-top:0;">You can update your personal access PIN anytime below.</p>
+            <input type="password" id="new-pin" class="input-field" placeholder="Enter New 4-Digit PIN">
+            <button class="btn" onclick="changeUserPin()">Update PIN</button>
+            
+            <!-- Admin Account Generation Engine -->
+            <div id="admin-account-section" class="hidden">
+                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 25px 0;">
+                <h3 style="color:#ff9500;">👑 Manager Panel: Create Livery Login Account</h3>
+                <input type="text" id="new-user-username" class="input-field" placeholder="Set Client Username (e.g. sophia)">
+                <input type="text" id="new-user-name" class="input-field" placeholder="Set Client Display Name (e.g. Sophia L)">
+                <input type="text" id="new-user-pin" class="input-field" placeholder="Set Temporary 4-Digit PIN (e.g. 1234)">
+                <button class="btn" style="background:#ff9500;" onclick="generateLiveryAccount()">Create Account</button>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="logOutPortal()">Sign Out</button>
     </div>
 </div>
 
 <script>
-    let currentRole = "livery";
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
+
+    let activeUser = null;
 
     window.onload = function() {
-        const savedRole = localStorage.getItem('yard_role');
-        if (savedRole) {
-            currentRole = savedRole;
-            launchPortal();
+        const cachedUser = localStorage.getItem('yard_session_user');
+        if (cachedUser) {
+            activeUser = JSON.parse(cachedUser);
+            launchPortalDashboard();
         }
     }
 
-    window.processLoginDirect = function() {
-        const input = document.getElementById('gate-pass').value.trim();
-        if (input === "321") {
-            currentRole = "admin";
-            localStorage.setItem('yard_role', 'admin');
-            launchPortal();
-        } else if (input === "123") {
-            currentRole = "livery";
-            localStorage.setItem('yard_role', 'livery');
-            launchPortal();
-        } else {
-            document.getElementById('gate-error').innerText = "❌ Invalid Code. Use 123 or 321.";
-        }
+    function supabaseRequest(method, endpoint, payload = null) {
+        const config = {
+            method: method,
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Content-Type': 'application/json'
+            }
+        };
+        if(payload) config.body = JSON.stringify(payload);
+        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
     }
 
-    function launchPortal() {
-        document.getElementById('screen-gate').classList.add('hidden');
-        document.getElementById('screen-main').classList.remove('hidden');
-        document.getElementById('app-title').innerText = currentRole === "admin" ? "Nine Gates EC Manager 👑" : "Nine Gates EC Portal 🐴";
-        document.getElementById('admin-section').className = currentRole === "admin" ? "" : "hidden";
+    function executeUserLogin() {
+        const userIn = document.getElementById('login-username').value.trim().toLowerCase();
+        const pinIn = document.getElementById('login-pin').value.trim();
+        
+        if(!userIn || !pinIn) return;
+        
+        supabaseRequest('GET', `user_accounts?username=eq.${userIn}`)
+        .then(data => {
+            if(data && data.length > 0 && data[0].pin_code === pinIn) {
+                activeUser = data[0];
+                localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
+                launchPortalDashboard();
+            } else {
+                document.getElementById('login-error').innerText = "❌ Incorrect username or security PIN.";
+            }
+        });
     }
 
-    window.lockApp = function() {
-        localStorage.clear();
-        location.reload();
-    }
-
-    window.toggleChore = function(element) {
-        element.classList.toggle('done');
-    }
-
-    window.switchTab = function(tab) {
-        // Reset all tabs to hidden and active labels off
-        document.getElementById('tab-diary').classList.add('hidden');
-        document.getElementById('tab-chores').classList.add('hidden');
-        document.getElementById('tab-horses').classList.add('hidden');
-        document.getElementById('tab-diary-btn').classList.remove('active');
-        document.getElementById('tab-chores-btn').classList.remove('active');
-        document.getElementById('tab-horses-btn').classList.remove('active');
-
-        // Show selected panel
-        document.getElementById('tab-' + tab).classList.remove('hidden');
-        document.getElementById('tab-' + tab + '-btn').classList.add('active');
-    }
-</script>
-</body>
-</html>
+    function launchPortalDashboard() {
