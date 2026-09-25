@@ -162,8 +162,11 @@
         
         if(!userIn || !pinIn) return;
         
+        document.getElementById('login-error').innerText = "Verifying credentials...";
+        
         supabaseRequest('GET', `user_accounts?username=eq.${userIn}`)
         .then(data => {
+            // FIX: Check if an account was found, and read from the first object in the list [0]
             if(data && data.length > 0 && data[0].pin_code === pinIn) {
                 activeUser = data[0];
                 localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
@@ -171,7 +174,11 @@
             } else {
                 document.getElementById('login-error').innerText = "❌ Incorrect username or security PIN.";
             }
+        }).catch(err => {
+            console.error(err);
+            document.getElementById('login-error').innerText = "⚠️ Network timeout or connection error.";
         });
     }
+
 
     function launchPortalDashboard() {
