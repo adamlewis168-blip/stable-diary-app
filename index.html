@@ -22,161 +22,156 @@
         .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; overflow: hidden; position: relative; }
         .card.manager-card { border-left-color: #ff9500; background: #fffcf7; }
         .card.completed-card { border-left-color: #34c759; background: #f4faf5; opacity: 0.7; }
-        .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
-        .card p { margin: 0; font-size: 13px; color: #86868b; line-height: 1.4; }
         .status-msg { text-align: center; font-size: 12px; color: #86868b; margin-top: 10px; }
     </style>
+</head>
+<body>
+<div class="container">
+    
+    <!-- LOGIN VIEW -->
+    <div id="screen-login">
+        <h1>🐴 Nine Gates EC</h1>
+        <h2>Yard Management Login</h2>
+        <input type="text" id="login-username" class="input-field" placeholder="Username (adam, coleen, erin, sophia)">
+        <input type="password" id="login-pin" class="input-field" placeholder="Security PIN Code">
+        <button class="btn" onclick="executeImmediateLogin()">Sign In</button>
+        <div id="login-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
+    </div>
 
-    <script>
-        const SUPABASE_URL = "https://supabase.co";
-        const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
-        const APP_VERSION = "1.0.6"; 
-        let activeUser = null;
+    <!-- MAIN VIEW -->
+    <div id="screen-main" class="hidden">
+        <h1 id="portal-title">Nine Gates Portal</h1>
+        <div id="status-text" class="status-msg">Connecting...</div>
+        
+        <div class="tab-menu">
+            <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Shared Calendar</button>
+            <button id="tab-rota-btn" class="tab-btn" onclick="switchTab('rota')">👑 Manager Rota</button>
+            <button id="tab-vault-btn" class="tab-btn" onclick="switchTab('vault')">📂 Doc Vault</button>
+        </div>
 
-        function executeImmediateLogin() {
-            let u = document.getElementById('login-username').value.trim().toLowerCase();
-            let p = document.getElementById('login-pin').value.trim();
-            
-            if (u === 'adam' && p === '321') {
-                activeUser = { username: 'adam', display_name: 'Adam', role: 'admin' };
-            } else if (u === 'coleen' && p === '321') {
-                activeUser = { username: 'coleen', display_name: 'Coleen', role: 'admin' };
-            } else if (u === 'erin' && p === '5555') {
-                activeUser = { username: 'erin', display_name: 'Erin', role: 'admin' };
-            } else if (u === 'sophia' && p === '1234') {
-                activeUser = { username: 'sophia', display_name: 'Sophia L', role: 'livery' };
-            } else {
-                document.getElementById('login-error').innerText = '❌ Access Denied. Check credentials.';
-                return;
-            }
-            localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
-            localStorage.setItem('yard_app_version', APP_VERSION);
+        <div id="tab-diary">
+            <h3>📅 Shared Yard Activity Log</h3>
+            <div id="diary-list">Loading events...</div>
+            <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
+            <h3>Log Entry / Arena Booking</h3>
+            <select id="diary-facility" class="input-field">
+                <option value="Main Manege Booking">Main Manege Booking 🏟️</option>
+                <option value="Small Manege Booking">Small Manege Booking 🪵</option>
+                <option value="Farrier Visit">Farrier On-Site 🛠️</option>
+                <option value="Vet / Medical">Vet / Treatment Room 🩺</option>
+                <option value="General Yard Event">General Stable Event 🗓️</option>
+            </select>
+            <input type="date" id="diary-date" class="input-field">
+            <input type="time" id="diary-time" class="input-field">
+            <input type="text" id="diary-title" class="input-field" placeholder="Event Summary Title">
+            <input type="text" id="diary-notes" class="input-field" placeholder="Notes (Farrier details, horse names)">
+            <button class="btn" onclick="saveDiaryEntry()">Add to Calendar</button>
+        </div>
+
+        <div id="tab-rota" class="hidden">
+            <h3 style="color:#ff9500;">👑 Internal Manager Rota Dashboard</h3>
+            <div id="rota-list">Loading tasks...</div>
+            <div id="admin-rota-section">
+                <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
+                <h3>Allocate Manager Task</h3>
+                <input type="date" id="rota-date" class="input-field">
+                <input type="text" id="rota-name" class="input-field" placeholder="Task Detail">
+                <select id="rota-assign" class="input-field">
+                    <option value="Adam">Adam 👨</option>
+                    <option value="Coleen">Coleen 👩</option>
+                    <option value="Erin">Erin 👩</option>
+                </select>
+                <button class="btn" style="background:#ff9500;" onclick="saveRotaTask()">Assign Task</button>
+            </div>
+        </div>
+
+        <div id="tab-vault" class="hidden">
+            <h3>📂 Policies & Operational Procedures</h3>
+            <div id="vault-list">Loading compliance tracker...</div>
+            <div id="admin-vault-section" class="hidden">
+                <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
+                <h3 style="color:#ff9500;">Upload Procedure Document</h3>
+                <input type="text" id="vault-title-in" class="input-field" placeholder="Document Name">
+                <input type="text" id="vault-url-in" class="input-field" placeholder="Paste Web Link">
+                <button class="btn" style="background:#ff9500;" onclick="saveVaultDoc()">Publish Document</button>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" style="margin-top:25px;" onclick="logOutPortal()">Sign Out</button>
+    </div>
+</div>
+
+<script>
+    const SUPABASE_URL = "https://supabase.co";
+    const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
+    const APP_VERSION = "1.0.7"; 
+    let activeUser = null;
+
+    function executeImmediateLogin() {
+        let u = document.getElementById('login-username').value.trim().toLowerCase();
+        let p = document.getElementById('login-pin').value.trim();
+        
+        if (u === 'adam' && p === '321') activeUser = { username: 'adam', display_name: 'Adam', role: 'admin' };
+        else if (u === 'coleen' && p === '321') activeUser = { username: 'coleen', display_name: 'Coleen', role: 'admin' };
+        else if (u === 'erin' && p === '5555') activeUser = { username: 'erin', display_name: 'Erin', role: 'admin' };
+        else if (u === 'sophia' && p === '1234') activeUser = { username: 'sophia', display_name: 'Sophia L', role: 'livery' };
+        else {
+            document.getElementById('login-error').innerText = '❌ Access Denied. Check credentials.';
+            return;
+        }
+        localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
+        localStorage.setItem('yard_app_version', APP_VERSION);
+        launchPortalDashboard();
+    }
+
+    window.onload = function() {
+        const savedVersion = localStorage.getItem('yard_app_version');
+        if (savedVersion && savedVersion !== APP_VERSION) {
+            localStorage.clear();
+            location.reload(true);
+            return;
+        }
+        const cachedUser = localStorage.getItem('yard_session_user');
+        if (cachedUser) {
+            activeUser = JSON.parse(cachedUser);
             launchPortalDashboard();
         }
+    }
 
-        window.onload = function() {
-            const savedVersion = localStorage.getItem('yard_app_version');
-            if (savedVersion && savedVersion !== APP_VERSION) {
-                localStorage.clear();
-                location.reload(true);
-                return;
-            }
-            const cachedUser = localStorage.getItem('yard_session_user');
-            if (cachedUser) {
-                activeUser = JSON.parse(cachedUser);
-                launchPortalDashboard();
-            }
-        }
+    function launchPortalDashboard() {
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('screen-main').classList.remove('hidden');
+        const isAdmin = activeUser.role === 'admin';
+        document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Yard Portal 🐴";
+        document.getElementById('tab-rota-btn').className = isAdmin ? "tab-btn" : "hidden";
+        document.getElementById('admin-rota-section').className = isAdmin ? "" : "hidden";
+        document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
+        fetchCalendar();
+        fetchVaultDocs();
+        if(isAdmin) fetchManagerRota();
+    }
 
-        function launchPortalDashboard() {
-            document.getElementById('screen-login').classList.add('hidden');
-            document.getElementById('screen-main').classList.remove('hidden');
-            
-            const isAdmin = activeUser.role === 'admin';
-            document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Yard Portal 🐴";
-            
-            document.getElementById('tab-rota-btn').className = isAdmin ? "tab-btn" : "hidden";
-            document.getElementById('admin-rota-section').className = isAdmin ? "" : "hidden";
-            document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
-            
-            fetchCalendar();
-            fetchVaultDocs();
-            if(isAdmin) fetchManagerRota();
-        }
+    function logOutPortal() {
+        localStorage.clear();
+        location.reload();
+    }
 
-        function logOutPortal() {
-            localStorage.clear();
-            location.reload();
-        }
+    function switchTab(tab) {
+        ['diary', 'rota', 'vault'].forEach(t => {
+            const el = document.getElementById('tab-' + t);
+            const btn = document.getElementById('tab-' + t + '-btn');
+            if(el) el.classList.add('hidden');
+            if(btn) btn.classList.remove('active');
+        });
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        document.getElementById('tab-' + tab + '-btn').add ? document.getElementById('tab-' + tab + '-btn').classList.add('active') : document.getElementById('tab-' + tab + '-btn').className += ' active';
+    }
 
-        function switchTab(tab) {
-            ['diary', 'rota', 'vault'].forEach(t => {
-                const el = document.getElementById('tab-' + t);
-                const btn = document.getElementById('tab-' + t + '-btn');
-                if(el) el.classList.add('hidden');
-                if(btn) btn.classList.remove('active');
-            });
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            document.getElementById('tab-' + tab + '-btn').classList.add('active');
-        }
-
-        function apiCall(endpoint, method, payload = null) {
-            const config = {
-                method: method,
-                headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
-            };
-            if(payload) config.body = JSON.stringify(payload);
-            return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
-        }
-
-        // --- CALENDAR ---
-        function fetchCalendar() {
-            apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
-            .then(data => {
-                const list = document.getElementById('diary-list');
-                list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered on the calendar.</p>" : "";
-                if(data && data.length > 0) {
-                    data.forEach(item => {
-                        list.innerHTML += `<div class="card">
-                            <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
-                            <p><strong>Title/Rider:</strong> ${item.title}</p>
-                            <p><strong>Details/Notes:</strong> ${item.notes || 'None logged.'}</p>
-                            <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
-                        </div>`;
-                    });
-                }
-                document.getElementById('status-text').innerText = "☁️ Real-time Cloud Synced";
-            });
-        }
-
-        function saveDiaryEntry() {
-            const payload = {
-                event_type: document.getElementById('diary-facility').value,
-                event_date: document.getElementById('diary-date').value,
-                event_time: document.getElementById('diary-time').value,
-                title: document.getElementById('diary-title').value,
-                notes: document.getElementById('diary-notes').value,
-                posted_by: activeUser.display_name
-            };
-            if(!payload.event_date || !payload.title) return alert("Date and event title are mandatory!");
-            apiCall('shared_calendar', 'POST', payload).then(() => {
-                fetchCalendar();
-                document.getElementById('diary-title').value = "";
-                document.getElementById('diary-notes').value = "";
-            });
-        }
-
-        // --- MANAGER ROTA ---
-        function fetchManagerRota() {
-            apiCall('manager_rota?order=task_date.asc', 'GET').then(data => {
-                const list = document.getElementById('rota-list');
-                list.innerHTML = (!data || data.length === 0) ? "<p>No manager duties scheduled.</p>" : "";
-                if(data && data.length > 0) {
-                    data.forEach(item => {
-                        const isDone = item.status === 'Completed';
-                        list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
-                            ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(${item.id})">Done ✓</button>` : ''}
-                            <h4>📋 ${item.task_name}</h4>
-                            <p><strong>Target Date:</strong> ${item.task_date}</p>
-                            <p><strong>Assigned Crew Member:</strong> <span style="font-weight:bold; color:#ff9500;">${item.assigned_to}</span></p>
-                            <p style="margin-top:4px;">Status: <strong>${item.status}</strong></p>
-                        </div>`;
-                    });
-                }
-            });
-        }
-
-        function saveRotaTask() {
-            const payload = {
-                task_date: document.getElementById('rota-date').value,
-                task_name: document.getElementById('rota-name').value,
-                assigned_to: document.getElementById('rota-assign').value
-            };
-            if(!payload.task_date || !payload.task_name) return alert("Date and Task details required!");
-            apiCall('manager_rota', 'POST', payload).then(() => {
-                fetchManagerRota();
-                document.getElementById('rota-name').value = "";
-            });
-        }
-
-<!-- Force Clear Reset -->
+    function apiCall(endpoint, method, payload = null) {
+        const config = {
+            method: method,
+            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
+        };
+        if(payload) config.body = JSON.stringify(payload);
+        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config)
+            .then(res => res.json())
