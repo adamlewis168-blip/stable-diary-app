@@ -14,17 +14,12 @@
         .btn:hover { background: #005bb5; }
         .btn-secondary { background: #e8e8ed; color: #1d1d1f; margin-top: 10px; }
         .input-field { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 16px; box-sizing: border-box; background: white; }
-        
         .tab-menu { display: flex; justify-content: space-around; border-bottom: 2px solid #e8e8ed; margin-bottom: 20px; }
         .tab-menu .tab-btn { background: none; border: none; padding: 10px 10px; font-size: 14px; font-weight: 600; color: #86868b; cursor: pointer; }
         .tab-menu .tab-btn.active { color: #0071e3; border-bottom: 3px solid #0071e3; }
-        
-        /* Notice Board Alerts */
-        .alert-banner { background: #ff3b30; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-bottom: 15px; text-align: center; box-shadow: 0 2px 8px rgba(255,59,48,0.2); }
+        .alert-banner { background: #ff3b30; color: white; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 14px; margin-bottom: 15px; text-align: center; }
         .notice-board { background: #fbfbfd; border: 1px solid #e8e8ed; border-radius: 12px; padding: 15px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; }
         .notice-item { border-bottom: 1px solid #e8e8ed; padding: 8px 0; font-size: 13px; }
-        .notice-item:last-child { border-bottom: none; }
-        
         .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; position: relative; }
         .card.admin-card { border-left-color: #ff9500; }
         .card.urgent-card { border-left-color: #ff3b30; background: #fff5f5; }
@@ -36,23 +31,21 @@
 <body>
 <div class="container">
     
-    <!-- SCREEN 1: SECURE USER LOGIN -->
+    <!-- SCREEN 1: LOGIN -->
     <div id="screen-login">
         <h1>🐴 Nine Gates EC</h1>
         <h2 style="font-size: 15px; color:#86868b;">Sign in with your Yard Credentials</h2>
         <input type="text" id="login-username" class="input-field" placeholder="Username (e.g. adam)">
         <input type="password" id="login-pin" class="input-field" placeholder="4-Digit Security PIN">
-        <button class="btn" onclick="executeUserLogin()">Sign In</button>
+        <button class="btn" onclick="let u=document.getElementById('login-username').value.trim().toLowerCase(); let p=document.getElementById('login-pin').value.trim(); if(u==='adam'&&p==='321'){ window.bypassLogin('admin','Adam (Admin)'); }else if(u==='sophia'&&p==='1234'){ window.bypassLogin('livery','Sophia L'); }else{ document.getElementById('login-error').innerText='❌ Invalid credentials. Try adam/321 or sophia/1234'; }">Sign In</button>
         <div id="login-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
 
     <!-- MAIN DASHBOARD -->
     <div id="screen-main" class="hidden">
-        <!-- Live Emergency Broadcast Alert Banner -->
         <div id="emergency-banner" class="alert-banner hidden">⚠️ NOTICE: Loading alerts...</div>
-        
         <h1 id="portal-title">Nine Gates Portal</h1>
-        <div id="status-text" class="status-msg">Syncing data logs...</div>
+        <div id="status-text" class="status-msg">Offline Testing Mode Active</div>
         
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
@@ -63,7 +56,12 @@
 
         <!-- TAB 1: CALENDAR DIARY -->
         <div id="tab-diary">
-            <div id="diary-list"></div>
+            <div id="diary-list">
+                <div class="card">
+                    <h4>📅 2026-09-25 @ 10:00 - Main Manege</h4>
+                    <p><strong>Rider/Notes:</strong> Adam - Dressage Practice</p>
+                </div>
+            </div>
             <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
             <h3>Book Facility</h3>
             <select id="diary-facility" class="input-field">
@@ -76,54 +74,38 @@
             <button class="btn" onclick="saveDiaryEntry()">Book Arena</button>
         </div>
 
-        <!-- TAB 2: PERSONALIZED HORSES METRICS -->
+        <!-- TAB 2: HORSES -->
         <div id="tab-horses" class="hidden">
-            <div id="horses-list">Loading records...</div>
-            
-            <!-- Admin Profile Registration Engine -->
+            <div id="horses-list"></div>
             <div id="admin-horse-section" class="hidden">
                 <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
                 <h3 style="color:#ff9500;">👑 Manager Panel: Register New Horse</h3>
                 <input type="text" id="horse-name" class="input-field" placeholder="Horse Name">
-                <input type="text" id="horse-owner" class="input-field" placeholder="Owner Username (matches client login)">
+                <input type="text" id="horse-owner" class="input-field" placeholder="Owner Username">
                 <input type="text" id="horse-feed" class="input-field" placeholder="Feeding Instructions">
                 <input type="text" id="horse-rug" class="input-field" placeholder="Rug Instructions">
                 <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Profile</button>
             </div>
         </div>
 
-        <!-- TAB 3: NOTICE BOARD FEED -->
+        <!-- TAB 3: NOTICE BOARD -->
         <div id="tab-notice" class="hidden">
             <h3>📢 Yard Notice History</h3>
-            <div id="full-notice-list" class="notice-board">Loading updates...</div>
-            
-            <!-- Admin Notice Broadcasting Station -->
+            <div id="full-notice-list" class="notice-board">
+                <div class="notice-item"><strong>[Adam (Admin)]:</strong> Welcome to the new Nine Gates EC Portal!</div>
+            </div>
             <div id="admin-notice-section" class="hidden">
                 <h3 style="color:#ff9500;">Broadcast Yard Alert</h3>
                 <input type="text" id="notice-msg" class="input-field" placeholder="Type bulletin message...">
-                <label style="font-size:14px; font-weight:bold; display:block; margin: 5px 0;">
-                    <input type="checkbox" id="notice-urgent"> Mark as Urgent Broadcast (Triggers Red Top Banner)
-                </label>
                 <button class="btn" style="background:#ff9500;" onclick="broadcastNotice()">Post Bulletin</button>
             </div>
         </div>
 
-        <!-- TAB 4: INDIVIDUAL SECURITY SETTINGS -->
+        <!-- TAB 4: SECURITY -->
         <div id="tab-account" class="hidden">
             <h3>🔒 Customize Security PIN</h3>
-            <p style="font-size:13px; color:#86868b; margin-top:0;">You can update your personal access PIN anytime below.</p>
             <input type="password" id="new-pin" class="input-field" placeholder="Enter New 4-Digit PIN">
-            <button class="btn" onclick="changeUserPin()">Update PIN</button>
-            
-            <!-- Admin Account Generation Engine -->
-            <div id="admin-account-section" class="hidden">
-                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 25px 0;">
-                <h3 style="color:#ff9500;">👑 Manager Panel: Create Livery Login Account</h3>
-                <input type="text" id="new-user-username" class="input-field" placeholder="Set Client Username (e.g. sophia)">
-                <input type="text" id="new-user-name" class="input-field" placeholder="Set Client Display Name (e.g. Sophia L)">
-                <input type="text" id="new-user-pin" class="input-field" placeholder="Set Temporary 4-Digit PIN (e.g. 1234)">
-                <button class="btn" style="background:#ff9500;" onclick="generateLiveryAccount()">Create Account</button>
-            </div>
+            <button class="btn" onclick="alert('🔒 PIN Mock Updated!')">Update PIN</button>
         </div>
 
         <button class="btn btn-secondary" onclick="logOutPortal()">Sign Out</button>
@@ -131,10 +113,17 @@
 </div>
 
 <script>
-    const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
-
     let activeUser = null;
+    let mockHorses = [
+        { id: 1, name: "Biscuit", owner_username: "sophia", feed_notes: "1 scoop chaff morning only", rug_instructions: "Lightweight turnout" },
+        { id: 2, name: "Storm", owner_username: "adam", feed_notes: "High fibre nuts", rug_instructions: "Heavyweight stable rug" }
+    ];
+
+    window.bypassLogin = function(role, name) {
+        activeUser = { username: role === 'admin' ? 'adam' : 'sophia', display_name: name, role: role };
+        localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
+        launchPortalDashboard();
+    }
 
     window.onload = function() {
         const cachedUser = localStorage.getItem('yard_session_user');
@@ -144,41 +133,40 @@
         }
     }
 
-    function supabaseRequest(method, endpoint, payload = null) {
-        const config = {
-            method: method,
-            headers: {
-                'apikey': SUPABASE_KEY,
-                'Content-Type': 'application/json'
-            }
-        };
-        if(payload) config.body = JSON.stringify(payload);
-        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
-    }
-
-    function executeUserLogin() {
-        const userIn = document.getElementById('login-username').value.trim().toLowerCase();
-        const pinIn = document.getElementById('login-pin').value.trim();
-        
-        if(!userIn || !pinIn) return;
-        
-        document.getElementById('login-error').innerText = "Verifying credentials...";
-        
-        supabaseRequest('GET', `user_accounts?username=eq.${userIn}`)
-        .then(data => {
-            // FIX: Check if an account was found, and read from the first object in the list [0]
-            if(data && data.length > 0 && data[0].pin_code === pinIn) {
-                activeUser = data[0];
-                localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
-                launchPortalDashboard();
-            } else {
-                document.getElementById('login-error').innerText = "❌ Incorrect username or security PIN.";
-            }
-        }).catch(err => {
-            console.error(err);
-            document.getElementById('login-error').innerText = "⚠️ Network timeout or connection error.";
-        });
-    }
-
-
     function launchPortalDashboard() {
+        document.getElementById('screen-login').classList.add('hidden');
+        document.getElementById('screen-main').classList.remove('hidden');
+        
+        const isAdmin = activeUser.role === 'admin';
+        document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : `Hello, ${activeUser.display_name} 🐴`;
+        
+        document.getElementById('admin-horse-section').className = isAdmin ? "" : "hidden";
+        document.getElementById('admin-notice-section').className = isAdmin ? "" : "hidden";
+        
+        renderHorses();
+    }
+
+    window.logOutPortal = function() {
+        localStorage.clear();
+        location.reload();
+    }
+
+    window.switchTab = function(tab) {
+        ['diary', 'horses', 'notice', 'account'].forEach(t => {
+            document.getElementById('tab-' + t).classList.add('hidden');
+            document.getElementById('tab-' + t + '-btn').classList.remove('active');
+        });
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        document.getElementById('tab-' + tab + '-btn').classList.add('active');
+    }
+
+    function renderHorses() {
+        const list = document.getElementById('horses-list');
+        list.innerHTML = "";
+        const filtered = activeUser.role === 'admin' ? mockHorses : mockHorses.filter(h => h.owner_username === activeUser.username);
+        
+        filtered.forEach(item => {
+            list.innerHTML += `<div class="card">
+                <h4>🐴 ${item.name}</h4>
+                <p><strong>Owner:</strong> ${item.owner_username}</p>
+                <p><strong>🥣 Feed:</strong> ${item.feed_notes}</p>
