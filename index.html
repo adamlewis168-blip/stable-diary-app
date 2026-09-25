@@ -4,7 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nine Gates EC Stable Portal</title>
+    
+    <!-- 1. The Cache Shield: Tells browsers never to hold onto this specific HTML file wrapper -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="mobile-web-app-capable" content="yes">
+
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #1d1d1f; }
         .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
@@ -22,11 +28,130 @@
         .notice-item { border-bottom: 1px solid #e8e8ed; padding: 8px 0; font-size: 13px; }
         .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; position: relative; }
         .card.admin-card { border-left-color: #ff9500; }
-        .card.urgent-card { border-left-color: #ff3b30; background: #fff5f5; }
         .card h4 { margin: 0 0 5px 0; color: #1d1d1f; }
         .card p { margin: 0; font-size: 13px; color: #86868b; line-height: 1.4; }
         .status-msg { text-align: center; font-size: 12px; color: #86868b; margin-top: 10px; }
     </style>
+
+    <script>
+        let activeUser = null;
+        let mockHorses = [
+            { id: 1, name: "Biscuit", owner_username: "sophia", feed_notes: "1 scoop chaff morning only", rug_instructions: "Lightweight turnout" },
+            { id: 2, name: "Storm", owner_username: "adam", feed_notes: "High fibre nuts", rug_instructions: "Heavyweight stable rug" }
+        ];
+
+        // 2. Automated Version Control: Change this number whenever we publish updates!
+        // This forces every browser to drop old file memory and download fresh features instantly.
+        const APP_VERSION = "1.0.2"; 
+
+        function executeImmediateLogin() {
+            let u = document.getElementById('login-username').value.trim().toLowerCase();
+            let p = document.getElementById('login-pin').value.trim();
+            
+            if (u === 'adam' && p === '321') {
+                activeUser = { username: 'adam', display_name: 'Adam (Admin)', role: 'admin' };
+            } else if (u === 'sophia' && p === '1234') {
+                activeUser = { username: 'sophia', display_name: 'Sophia L', role: 'livery' };
+            } else {
+                document.getElementById('login-error').innerText = '❌ Invalid credentials. Try adam/321 or sophia/1234';
+                return;
+            }
+            
+            localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
+            localStorage.setItem('yard_app_version', APP_VERSION);
+            launchPortalDashboard();
+        }
+
+        window.onload = function() {
+            // 3. Automated Force-Refresh Logic
+            const savedVersion = localStorage.getItem('yard_app_version');
+            if (savedVersion && savedVersion !== APP_VERSION) {
+                localStorage.clear(); // Wipe version cache mismatch
+                location.reload(true); // Hard refresh browser view
+                return;
+            }
+
+            const cachedUser = localStorage.getItem('yard_session_user');
+            if (cachedUser) {
+                activeUser = JSON.parse(cachedUser);
+                launchPortalDashboard();
+            }
+        }
+
+        function launchPortalDashboard() {
+            document.getElementById('screen-login').classList.add('hidden');
+            document.getElementById('screen-main').classList.remove('hidden');
+            
+            const isAdmin = activeUser.role === 'admin';
+            document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : `Hello, ${activeUser.display_name} 🐴`;
+            
+            document.getElementById('admin-horse-section').className = isAdmin ? "" : "hidden";
+            document.getElementById('admin-notice-section').className = isAdmin ? "" : "hidden";
+            
+            renderHorses();
+        }
+
+        function logOutPortal() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function switchTab(tab) {
+            ['diary', 'horses', 'notice', 'account'].forEach(t => {
+                document.getElementById('tab-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t + '-btn').classList.remove('active');
+            });
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab + '-btn').classList.add('active');
+        }
+
+        function renderHorses() {
+            const list = document.getElementById('horses-list');
+            list.innerHTML = "";
+            const filtered = activeUser.role === 'admin' ? mockHorses : mockHorses.filter(h => h.owner_username === activeUser.username);
+            
+            filtered.forEach(item => {
+                list.innerHTML += `<div class="card">
+                    <h4>🐴 ${item.name}</h4>
+                    <p><strong>Owner:</strong> ${item.owner_username}</p>
+                    <p><strong>🥣 Feed:</strong> ${item.feed_notes}</p>
+                    <p><strong>🧥 Rugs:</strong> ${item.rug_instructions}</p>
+                </div>`;
+            });
+        }
+
+        function saveDiaryEntry() {
+            const list = document.getElementById('diary-list');
+            const fac = document.getElementById('diary-facility').value;
+            const dt = document.getElementById('diary-date').value;
+            const tm = document.getElementById('diary-time').value;
+            const nt = document.getElementById('diary-notes').value;
+            if(!dt || !tm) return alert("Date and Time required!");
+            list.innerHTML += `<div class="card">
+                <h4>📅 ${dt} @ ${tm} - ${fac}</h4>
+                <p><strong>Rider/Notes:</strong> ${activeUser.display_name} - ${nt}</p>
+                </div>`;
+        }
+
+        function saveHorseProfile() {
+            const horse = {
+                id: mockHorses.length + 1,
+                name: document.getElementById('horse-name').value,
+                owner_username: document.getElementById('horse-owner').value.trim().toLowerCase(),
+                feed_notes: document.getElementById('horse-feed').value,
+                rug_instructions: document.getElementById('horse-rug').value
+            };
+            mockHorses.push(horse);
+            renderHorses();
+        }
+
+        function broadcastNotice() {
+            const msg = document.getElementById('notice-msg').value;
+            const board = document.getElementById('full-notice-list');
+            board.innerHTML = `<div class="notice-item"><strong>[${activeUser.display_name}]:</strong> ${msg}</div>` + board.innerHTML;
+            document.getElementById('notice-msg').value = "";
+        }
+    </script>
 </head>
 <body>
 <div class="container">
@@ -37,7 +162,7 @@
         <h2 style="font-size: 15px; color:#86868b;">Sign in with your Yard Credentials</h2>
         <input type="text" id="login-username" class="input-field" placeholder="Username (e.g. adam)">
         <input type="password" id="login-pin" class="input-field" placeholder="4-Digit Security PIN">
-        <button class="btn" onclick="let u=document.getElementById('login-username').value.trim().toLowerCase(); let p=document.getElementById('login-pin').value.trim(); if(u==='adam'&&p==='321'){ window.bypassLogin('admin','Adam (Admin)'); }else if(u==='sophia'&&p==='1234'){ window.bypassLogin('livery','Sophia L'); }else{ document.getElementById('login-error').innerText='❌ Invalid credentials. Try adam/321 or sophia/1234'; }">Sign In</button>
+        <button class="btn" onclick="executeImmediateLogin()">Sign In</button>
         <div id="login-error" style="color: red; text-align:center; font-size:14px; margin-top:10px;"></div>
     </div>
 
@@ -45,7 +170,7 @@
     <div id="screen-main" class="hidden">
         <div id="emergency-banner" class="alert-banner hidden">⚠️ NOTICE: Loading alerts...</div>
         <h1 id="portal-title">Nine Gates Portal</h1>
-        <div id="status-text" class="status-msg">Offline Testing Mode Active</div>
+        <div id="status-text" class="status-msg">Shielded Testing Engine Active</div>
         
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Diary</button>
@@ -58,115 +183,3 @@
         <div id="tab-diary">
             <div id="diary-list">
                 <div class="card">
-                    <h4>📅 2026-09-25 @ 10:00 - Main Manege</h4>
-                    <p><strong>Rider/Notes:</strong> Adam - Dressage Practice</p>
-                </div>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
-            <h3>Book Facility</h3>
-            <select id="diary-facility" class="input-field">
-                <option value="Main Manege">Main Manege 🏟️</option>
-                <option value="Small Manege">Small Manege 🪵</option>
-            </select>
-            <input type="date" id="diary-date" class="input-field">
-            <input type="time" id="diary-time" class="input-field">
-            <input type="text" id="diary-notes" class="input-field" placeholder="Activity Notes">
-            <button class="btn" onclick="saveDiaryEntry()">Book Arena</button>
-        </div>
-
-        <!-- TAB 2: HORSES -->
-        <div id="tab-horses" class="hidden">
-            <div id="horses-list"></div>
-            <div id="admin-horse-section" class="hidden">
-                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
-                <h3 style="color:#ff9500;">👑 Manager Panel: Register New Horse</h3>
-                <input type="text" id="horse-name" class="input-field" placeholder="Horse Name">
-                <input type="text" id="horse-owner" class="input-field" placeholder="Owner Username">
-                <input type="text" id="horse-feed" class="input-field" placeholder="Feeding Instructions">
-                <input type="text" id="horse-rug" class="input-field" placeholder="Rug Instructions">
-                <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Profile</button>
-            </div>
-        </div>
-
-        <!-- TAB 3: NOTICE BOARD -->
-        <div id="tab-notice" class="hidden">
-            <h3>📢 Yard Notice History</h3>
-            <div id="full-notice-list" class="notice-board">
-                <div class="notice-item"><strong>[Adam (Admin)]:</strong> Welcome to the new Nine Gates EC Portal!</div>
-            </div>
-            <div id="admin-notice-section" class="hidden">
-                <h3 style="color:#ff9500;">Broadcast Yard Alert</h3>
-                <input type="text" id="notice-msg" class="input-field" placeholder="Type bulletin message...">
-                <button class="btn" style="background:#ff9500;" onclick="broadcastNotice()">Post Bulletin</button>
-            </div>
-        </div>
-
-        <!-- TAB 4: SECURITY -->
-        <div id="tab-account" class="hidden">
-            <h3>🔒 Customize Security PIN</h3>
-            <input type="password" id="new-pin" class="input-field" placeholder="Enter New 4-Digit PIN">
-            <button class="btn" onclick="alert('🔒 PIN Mock Updated!')">Update PIN</button>
-        </div>
-
-        <button class="btn btn-secondary" onclick="logOutPortal()">Sign Out</button>
-    </div>
-</div>
-
-<script>
-    let activeUser = null;
-    let mockHorses = [
-        { id: 1, name: "Biscuit", owner_username: "sophia", feed_notes: "1 scoop chaff morning only", rug_instructions: "Lightweight turnout" },
-        { id: 2, name: "Storm", owner_username: "adam", feed_notes: "High fibre nuts", rug_instructions: "Heavyweight stable rug" }
-    ];
-
-    window.bypassLogin = function(role, name) {
-        activeUser = { username: role === 'admin' ? 'adam' : 'sophia', display_name: name, role: role };
-        localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
-        launchPortalDashboard();
-    }
-
-    window.onload = function() {
-        const cachedUser = localStorage.getItem('yard_session_user');
-        if (cachedUser) {
-            activeUser = JSON.parse(cachedUser);
-            launchPortalDashboard();
-        }
-    }
-
-    function launchPortalDashboard() {
-        document.getElementById('screen-login').classList.add('hidden');
-        document.getElementById('screen-main').classList.remove('hidden');
-        
-        const isAdmin = activeUser.role === 'admin';
-        document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : `Hello, ${activeUser.display_name} 🐴`;
-        
-        document.getElementById('admin-horse-section').className = isAdmin ? "" : "hidden";
-        document.getElementById('admin-notice-section').className = isAdmin ? "" : "hidden";
-        
-        renderHorses();
-    }
-
-    window.logOutPortal = function() {
-        localStorage.clear();
-        location.reload();
-    }
-
-    window.switchTab = function(tab) {
-        ['diary', 'horses', 'notice', 'account'].forEach(t => {
-            document.getElementById('tab-' + t).classList.add('hidden');
-            document.getElementById('tab-' + t + '-btn').classList.remove('active');
-        });
-        document.getElementById('tab-' + tab).classList.remove('hidden');
-        document.getElementById('tab-' + tab + '-btn').classList.add('active');
-    }
-
-    function renderHorses() {
-        const list = document.getElementById('horses-list');
-        list.innerHTML = "";
-        const filtered = activeUser.role === 'admin' ? mockHorses : mockHorses.filter(h => h.owner_username === activeUser.username);
-        
-        filtered.forEach(item => {
-            list.innerHTML += `<div class="card">
-                <h4>🐴 ${item.name}</h4>
-                <p><strong>Owner:</strong> ${item.owner_username}</p>
-                <p><strong>🥣 Feed:</strong> ${item.feed_notes}</p>
