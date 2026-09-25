@@ -30,7 +30,7 @@
     <script>
         const SUPABASE_URL = "https://supabase.co";
         const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
-        const APP_VERSION = "1.0.5"; 
+        const APP_VERSION = "1.0.6"; 
         let activeUser = null;
 
         function executeImmediateLogin() {
@@ -75,7 +75,6 @@
             const isAdmin = activeUser.role === 'admin';
             document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Yard Portal 🐴";
             
-            // Toggle view visibility rules based on administrative roles
             document.getElementById('tab-rota-btn').className = isAdmin ? "tab-btn" : "hidden";
             document.getElementById('admin-rota-section').className = isAdmin ? "" : "hidden";
             document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
@@ -110,20 +109,22 @@
             return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
         }
 
-        // --- MODULE 1: SHARED YARD CALENDAR ---
+        // --- CALENDAR ---
         function fetchCalendar() {
             apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
             .then(data => {
                 const list = document.getElementById('diary-list');
-                list.innerHTML = data.length === 0 ? "<p>No entries registered on the calendar.</p>" : "";
-                data.forEach(item => {
-                    list.innerHTML += `<div class="card">
-                        <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
-                        <p><strong>Title/Rider:</strong> ${item.title}</p>
-                        <p><strong>Details/Notes:</strong> ${item.notes || 'None logged.'}</p>
-                        <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
-                    </div>`;
-                });
+                list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered on the calendar.</p>" : "";
+                if(data && data.length > 0) {
+                    data.forEach(item => {
+                        list.innerHTML += `<div class="card">
+                            <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
+                            <p><strong>Title/Rider:</strong> ${item.title}</p>
+                            <p><strong>Details/Notes:</strong> ${item.notes || 'None logged.'}</p>
+                            <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
+                        </div>`;
+                    });
+                }
                 document.getElementById('status-text').innerText = "☁️ Real-time Cloud Synced";
             });
         }
@@ -145,21 +146,23 @@
             });
         }
 
-        // --- MODULE 2: MANAGER ROTA TRACKER ---
+        // --- MANAGER ROTA ---
         function fetchManagerRota() {
             apiCall('manager_rota?order=task_date.asc', 'GET').then(data => {
                 const list = document.getElementById('rota-list');
-                list.innerHTML = data.length === 0 ? "<p>No manager duties scheduled.</p>" : "";
-                data.forEach(item => {
-                    const isDone = item.status === 'Completed';
-                    list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
-                        ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(${item.id})">Done ✓</button>` : ''}
-                        <h4>📋 ${item.task_name}</h4>
-                        <p><strong>Target Date:</strong> ${item.task_date}</p>
-                        <p><strong>Assigned Crew Member:</strong> <span style="font-weight:bold; color:#ff9500;">${item.assigned_to}</span></p>
-                        <p style="margin-top:4px;">Status: <strong>${item.status}</strong></p>
-                    </div>`;
-                });
+                list.innerHTML = (!data || data.length === 0) ? "<p>No manager duties scheduled.</p>" : "";
+                if(data && data.length > 0) {
+                    data.forEach(item => {
+                        const isDone = item.status === 'Completed';
+                        list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
+                            ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(${item.id})">Done ✓</button>` : ''}
+                            <h4>📋 ${item.task_name}</h4>
+                            <p><strong>Target Date:</strong> ${item.task_date}</p>
+                            <p><strong>Assigned Crew Member:</strong> <span style="font-weight:bold; color:#ff9500;">${item.assigned_to}</span></p>
+                            <p style="margin-top:4px;">Status: <strong>${item.status}</strong></p>
+                        </div>`;
+                    });
+                }
             });
         }
 
@@ -176,5 +179,3 @@
             });
         }
 
-        function completeRotaTask(id) {
-            fetch(`${SUPABASE_URL}/rest/v1/manager_rota?id=eq.${id}`, {
