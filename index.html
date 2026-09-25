@@ -175,3 +175,114 @@
         if(payload) config.body = JSON.stringify(payload);
         return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config)
             .then(res => res.json())
+
+                .catch(err => console.error("API error:", err));
+    }
+
+    function fetchCalendar() {
+        apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
+        .then(data => {
+            const list = document.getElementById('diary-list');
+            if(!list) return;
+            list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered.</p>" : "";
+            if(data && data.length > 0) {
+                data.forEach(item => {
+                    list.innerHTML += `<div class="card">
+                        <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
+                        <p><strong>Title:</strong> ${item.title}</p>
+                        <p><strong>Notes:</strong> ${item.notes || 'None'}</p>
+                    </div>`;
+                });
+            }
+            document.getElementById('status-text').innerText = "☁️ Cloud Connected";
+        });
+    }
+
+    function saveDiaryEntry() {
+        const payload = {
+            event_type: document.getElementById('diary-facility').value,
+            event_date: document.getElementById('diary-date').value,
+            event_time: document.getElementById('diary-time').value,
+            title: document.getElementById('diary-title').value,
+            notes: document.getElementById('diary-notes').value,
+            posted_by: activeUser.display_name
+        };
+        if(!payload.event_date || !payload.title) return alert("Date and title are required!");
+        apiCall('shared_calendar', 'POST', payload).then(() => {
+            fetchCalendar();
+            document.getElementById('diary-title').value = "";
+            document.getElementById('diary-notes').value = "";
+        });
+    }
+
+    function fetchManagerRota() {
+        apiCall('manager_rota?order=task_date.asc', 'GET').then(data => {
+            const list = document.getElementById('rota-list');
+            if(!list) return;
+            list.innerHTML = (!data || data.length === 0) ? "<p>No duties scheduled.</p>" : "";
+            if(data && data.length > 0) {
+                data.forEach(item => {
+                    const isDone = item.status === 'Completed';
+                    list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
+                        ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(\${item.id})">Done ✓</button>` : ''}
+                        <h4>📋 ${item.task_name}</h4>
+                        <p><strong>Crew:</strong> ${item.assigned_to}</p>
+                    </div>`;
+                });
+            }
+        });
+    }
+
+    function saveRotaTask() {
+        const payload = {
+            task_date: document.getElementById('rota-date').value,
+            task_name: document.getElementById('rota-name').value,
+            assigned_to: document.getElementById('rota-assign').value
+        };
+        if(!payload.task_date || !payload.task_name) return alert("Fields required!");
+        apiCall('manager_rota', 'POST', payload).then(() => fetchManagerRota());
+    }
+
+    function completeRotaTask(id) {
+        fetch(`${SUPABASE_URL}/rest/v1/manager_rota?id=eq.${id}`, {
+            method: 'PATCH',
+            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Completed' })
+        }).then(() => fetchManagerRota());
+    }
+
+    function fetchVaultDocs() {
+        apiCall('document_vault?order=title.asc', 'GET').then(docs => {
+            apiCall(`doc_compliance?username=eq.${activeUser.username}`, 'GET').then(compliance => {
+                const readDocIds = compliance ? compliance.map(c => c.doc_id.toString()) : [];
+                const list = document.getElementById('vault-list');
+                if(!list) return;
+                list.innerHTML = (!docs || docs.length === 0) ? "<p>No files found.</p>" : "";
+                if(docs && docs.length > 0) {
+                    docs.forEach(doc => {
+                        const hasRead = readDocIds.includes(doc.id.toString());
+                        list.innerHTML += `<div class="card ${hasRead ? 'completed-card' : ''}">
+                            ${!hasRead ? `<button class="btn-action" onclick="markDocAsRead(\${doc.id})">Mark Read</button>` : '<span>Read ✓</span>'}
+                            <h4>📂 ${doc.title}</h4>
+                            <p><a href="${doc.doc_url}" target="_blank">🔗 View Document</a></p>
+                        </div>`;
+                    });
+                }
+            });
+        });
+    }
+
+    function markDocAsRead(docId) {
+        apiCall('doc_compliance', 'POST', { doc_id: docId, username: activeUser.username }).then(() => fetchVaultDocs());
+    }
+
+    function saveVaultDoc() {
+        const payload = {
+            title: document.getElementById('vault-title-in').value,
+            doc_url: document.getElementById('vault-url-in').value
+        };
+        apiCall('document_vault', 'POST', payload).then(() => fetchVaultDocs());
+    }
+</script>
+</body>
+</html>
