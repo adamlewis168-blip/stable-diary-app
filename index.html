@@ -198,10 +198,17 @@
             .catch(err => console.error("API error:", err));
     }
     // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
+  // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
     function fetchHorses() {
+        const list = document.getElementById('horses-list');
+        if(!list) return;
+        
         apiCall('horses?order=name.asc', 'GET').then(data => {
-            const list = document.getElementById('horses-list');
-            if(!list) return;
+            // Check if Supabase returned a systemic database error code
+            if (data && data.code) {
+                list.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Database Error: ${data.message}</p><p style="font-size:12px; color:#86868b;">This usually means the table columns don't match your entries or RLS rules are blocking public tokens.</p>`;
+                return;
+            }
             
             // SECURITY FILTER: Standard clients only see their OWN horse card. Admins see all.
             const filtered = activeUser.role === 'admin' ? data : data.filter(h => h.owner_username === activeUser.username);
@@ -218,6 +225,9 @@
                     <input type="text" class="input-field" style="padding:8px; margin:2px 0 0 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
                 </div>`;
             });
+        }).catch(err => {
+            console.error(err);
+            list.innerHTML = `<p style="color:red;">⚠️ Network Connection Timeout.</p>`;
         });
     }
 
