@@ -200,11 +200,11 @@
     // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
   // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
     // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
+    // --- MODULE: PRIVACY ISOLATED HORSE PROFILES ---
     function fetchHorses() {
         const list = document.getElementById('horses-list');
         if(!list) return;
         
-        // REMOVED COMPLEX SORTING: Flat, direct database pull to prevent server rejection
         apiCall('horses', 'GET').then(data => {
             if (data && data.code) {
                 list.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Database Error: ${data.message}</p>`;
@@ -220,10 +220,16 @@
                 list.innerHTML += `<div class="card ${activeUser.role === 'admin' ? 'manager-card' : ''}">
                     <h4>🐴 ${item.name || 'Unnamed Horse'}</h4>
                     <p><strong>Owner Profile Account:</strong> ${item.owner_username || 'Unassigned'}</p>
-                    <p style="margin-top:5px;"><strong>🥣 Feed Room Rations:</strong></p>
+                    
+                    <p style="margin-top:5px; font-size:12px; font-weight:bold; color:#1c3d5a;">🥣 Feed Room Rations:</p>
                     <input type="text" class="input-field" style="padding:8px; margin:2px 0 8px 0;" value="${item.feed_notes || ''}" onchange="updateHorseMetric(${item.id}, 'feed_notes', this.value)">
-                    <p><strong>🧥 Rug Instructions:</strong></p>
-                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 0 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
+                    
+                    <p style="font-size:12px; font-weight:bold; color:#1c3d5a;">🧥 Rug Instructions:</p>
+                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 8px 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
+                    
+                    <!-- NEW FIELD: Free entry field for general other notes -->
+                    <p style="font-size:12px; font-weight:bold; color:#1c3d5a;">📝 General Notes & Reminders:</p>
+                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 0 0;" value="${item.other_notes || ''}" placeholder="e.g. Vet coming Tuesday, turn out in boots..." onchange="updateHorseMetric(${item.id}, 'other_notes', this.value)">
                 </div>`;
             });
         }).catch(err => {
