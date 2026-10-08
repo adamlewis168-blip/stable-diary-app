@@ -44,11 +44,13 @@
         <div id="status-text" class="status-msg">Connecting...</div>
         
         <div class="tab-menu">
-            <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Shared Calendar</button>
+            <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Calendar</button>
+            <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
             <button id="tab-rota-btn" class="tab-btn" onclick="switchTab('rota')">👑 Manager Rota</button>
             <button id="tab-vault-btn" class="tab-btn" onclick="switchTab('vault')">📂 Doc Vault</button>
         </div>
 
+        <!-- TAB 1: CALENDAR -->
         <div id="tab-diary">
             <h3>📅 Shared Yard Activity Log</h3>
             <div id="diary-list">Loading events...</div>
@@ -68,6 +70,22 @@
             <button class="btn" onclick="saveDiaryEntry()">Add to Calendar</button>
         </div>
 
+        <!-- TAB 2: PRIVACY ISOLATED HORSES MODULE -->
+        <div id="tab-horses" class="hidden">
+            <h3>🐴 Registered Horse Profiles</h3>
+            <div id="horses-list">Loading profiles...</div>
+            <div id="admin-horse-section" class="hidden">
+                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
+                <h3 style="color:#ff9500;">Upload New Horse Profile</h3>
+                <input type="text" id="horse-name-in" class="input-field" placeholder="Horse Name">
+                <input type="text" id="horse-owner-in" class="input-field" placeholder="Owner Username (e.g. sophia)">
+                <input type="text" id="horse-feed-in" class="input-field" placeholder="Feed Instructions">
+                <input type="text" id="horse-rug-in" class="input-field" placeholder="Rug Instructions">
+                <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Horse</button>
+            </div>
+        </div>
+
+        <!-- TAB 3: MANAGER ROTA -->
         <div id="tab-rota" class="hidden">
             <h3 style="color:#ff9500;">👑 Internal Manager Rota Dashboard</h3>
             <div id="rota-list">Loading tasks...</div>
@@ -85,6 +103,7 @@
             </div>
         </div>
 
+        <!-- TAB 4: DOCUMENT VAULT -->
         <div id="tab-vault" class="hidden">
             <h3>📂 Policies & Operational Procedures</h3>
             <div id="vault-list">Loading compliance tracker...</div>
@@ -104,7 +123,7 @@
 <script>
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
-    const APP_VERSION = "1.0.7"; 
+    const APP_VERSION = "1.0.8"; 
     let activeUser = null;
 
     function executeImmediateLogin() {
@@ -145,46 +164,103 @@
         document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Yard Portal 🐴";
         document.getElementById('tab-rota-btn').className = isAdmin ? "tab-btn" : "hidden";
         document.getElementById('admin-rota-section').className = isAdmin ? "" : "hidden";
-        document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
-        fetchCalendar();
-        fetchVaultDocs();
-        if(isAdmin) fetchManagerRota();
+document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
+document.getElementById('admin-horse-section').className = isAdmin ? "" : "hidden";
+fetchCalendar();
+fetchVaultDocs();
+fetchHorses();
+if(isAdmin) fetchManagerRota();
+}
+function logOutPortal() {
+localStorage.clear();
+location.reload();
+}
+function switchTab(tab) {
+['diary', 'horses', 'rota', 'vault'].forEach(t => {
+const el = document.getElementById('tab-' + t);
+const btn = document.getElementById('tab-' + t + '-btn');
+if(el) el.classList.add('hidden');
+if(btn) btn.classList.remove('active');
+});
+document.getElementById('tab-' + tab).classList.remove('hidden');
+if(document.getElementById('tab-' + tab + '-btn')) {
+document.getElementById('tab-' + tab + '-btn').className = 'tab-btn active';
+}
+}
+function apiCall(endpoint, method, payload = null) {
+const config = {
+method: method,
+headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
+};
+if(payload) config.body = JSON.stringify(payload);
+return fetch(${SUPABASE_URL}/rest/v1/${endpoint}, config)
+.then(res => res.json())
+              .then(res => res.json())
+            .catch(err => console.error("API error:", err));
     }
 
-    function logOutPortal() {
-        localStorage.clear();
-        location.reload();
-    }
-
-    function switchTab(tab) {
-        ['diary', 'rota', 'vault'].forEach(t => {
-            const el = document.getElementById('tab-' + t);
-            const btn = document.getElementById('tab-' + t + '-btn');
-            if(el) el.classList.add('hidden');
-            if(btn) btn.classList.remove('active');
+    // --- NEW MODULE: PRIVACY ISOLATED HORSE PROFILES ---
+    function fetchHorses() {
+        apiCall('horses?order=name.asc', 'GET').then(data => {
+            const list = document.getElementById('horses-list');
+            if(!list) return;
+            
+            // SECURITY FILTER: Standard clients only see their OWN horse card. Admins see all.
+            const filtered = activeUser.role === 'admin' ? data : data.filter(h => h.owner_username === activeUser.username);
+            
+            list.innerHTML = filtered.length === 0 ? "<p>No registered horses found.</p>" : "";
+            
+            filtered.forEach(item => {
+                list.innerHTML += `<div class="card ${activeUser.role === 'admin' ? 'manager-card' : ''}">
+                    <h4>🐴 ${item.name}</h4>
+                    <p><strong>Owner Profile Account:</strong> ${item.owner_username || 'Unassigned'}</p>
+                    <p style="margin-top:5px;"><strong>🥣 Feed Room Rations:</strong></p>
+                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 8px 0;" value="${item.feed_notes || ''}" onchange="updateHorseMetric(${item.id}, 'feed_notes', this.value)">
+                    <p><strong>🧥 Rug Instructions:</strong></p>
+                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 0 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
+                </div>`;
+            });
         });
-        document.getElementById('tab-' + tab).classList.remove('hidden');
-        document.getElementById('tab-' + tab + '-btn').add ? document.getElementById('tab-' + tab + '-btn').classList.add('active') : document.getElementById('tab-' + tab + '-btn').className += ' active';
     }
 
-    function apiCall(endpoint, method, payload = null) {
-        const config = {
-            method: method,
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
+    function updateHorseMetric(id, field, value) {
+        const payload = {};
+        payload[field] = value;
+        
+        fetch(`${SUPABASE_URL}/rest/v1/horses?id=eq.${id}`, {
+            method: 'PATCH',
+            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(() => {
+            document.getElementById('status-text').innerText = "✨ Metric Saved Auto-Syncing...";
+            setTimeout(() => { document.getElementById('status-text').innerText = "☁️ Cloud Connected"; }, 2000);
+        });
+    }
+
+    function saveHorseProfile() {
+        const payload = {
+            name: document.getElementById('horse-name-in').value,
+            owner_username: document.getElementById('horse-owner-in').value.trim().toLowerCase(),
+            feed_notes: document.getElementById('horse-feed-in').value,
+            rug_instructions: document.getElementById('horse-rug-in').value
         };
-        if(payload) config.body = JSON.stringify(payload);
-        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config)
-            .then(res => res.json())
-
-                .catch(err => console.error("API error:", err));
+        if(!payload.name || !payload.owner_username) return alert("Horse Name and Owner identity username are mandatory!");
+        apiCall('horses', 'POST', payload).then(() => {
+            fetchHorses();
+            document.getElementById('horse-name-in').value = "";
+            document.getElementById('horse-owner-in').value = "";
+            document.getElementById('horse-feed-in').value = "";
+            document.getElementById('horse-rug-in').value = "";
+        });
     }
 
+    // --- CALENDAR ACTIVITIES ---
     function fetchCalendar() {
         apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
         .then(data => {
             const list = document.getElementById('diary-list');
             if(!list) return;
-            list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered.</p>" : "";
+            list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered on the calendar.</p>" : "";
             if(data && data.length > 0) {
                 data.forEach(item => {
                     list.innerHTML += `<div class="card">
@@ -215,6 +291,7 @@
         });
     }
 
+    // --- INTERNALS MANAGER ROTA ---
     function fetchManagerRota() {
         apiCall('manager_rota?order=task_date.asc', 'GET').then(data => {
             const list = document.getElementById('rota-list');
@@ -251,6 +328,7 @@
         }).then(() => fetchManagerRota());
     }
 
+    // --- COMPLIANCE DOCUMENT VAULT ---
     function fetchVaultDocs() {
         apiCall('document_vault?order=title.asc', 'GET').then(docs => {
             apiCall(`doc_compliance?username=eq.${activeUser.username}`, 'GET').then(compliance => {
@@ -286,3 +364,4 @@
 </script>
 </body>
 </html>
+  
