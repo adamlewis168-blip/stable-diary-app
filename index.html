@@ -126,36 +126,32 @@
     const APP_VERSION = "1.0.8"; 
     let activeUser = null;
 
-    function executeImmediateLogin() {
-        let u = document.getElementById('login-username').value.trim().toLowerCase();
-        let p = document.getElementById('login-pin').value.trim();
-        
-        if (u === 'adam' && p === '321') activeUser = { username: 'adam', display_name: 'Adam', role: 'admin' };
-        else if (u === 'coleen' && p === '321') activeUser = { username: 'coleen', display_name: 'Coleen', role: 'admin' };
-        else if (u === 'erin' && p === '5555') activeUser = { username: 'erin', display_name: 'Erin', role: 'admin' };
-        else if (u === 'sophia' && p === '1234') activeUser = { username: 'sophia', display_name: 'Sophia L', role: 'livery' };
-        else {
-            document.getElementById('login-error').innerText = '❌ Access Denied. Check credentials.';
-            return;
-        }
-        localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
-        localStorage.setItem('yard_app_version', APP_VERSION);
-        launchPortalDashboard();
-    }
-
-    window.onload = function() {
-        const savedVersion = localStorage.getItem('yard_app_version');
-        if (savedVersion && savedVersion !== APP_VERSION) {
-            localStorage.clear();
-            location.reload(true);
-            return;
-        }
-        const cachedUser = localStorage.getItem('yard_session_user');
-        if (cachedUser) {
-            activeUser = JSON.parse(cachedUser);
+        function executeImmediateLogin() {
+            let u = document.getElementById('login-username').value.trim().toLowerCase();
+            let p = document.getElementById('login-pin').value.trim();
+            
+            if (!u || !p) {
+                document.getElementById('login-error').innerText = '❌ Please enter both fields.';
+                return;
+            }
+            
+            if (u === 'adam' && p === '321') {
+                activeUser = { username: 'adam', display_name: 'Adam', role: 'admin' };
+            } else if (u === 'coleen' && p === '321') {
+                activeUser = { username: 'coleen', display_name: 'Coleen', role: 'admin' };
+            } else if (u === 'erin' && p === '5555') {
+                activeUser = { username: 'erin', display_name: 'Erin', role: 'admin' };
+            } else if (u === 'sophia' && p === '1234') {
+                activeUser = { username: 'sophia', display_name: 'Sophia L', role: 'livery' };
+            } else {
+                document.getElementById('login-error').innerText = '❌ Invalid credentials. Try adam/321 or sophia/1234';
+                return;
+            }
+            localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
+            localStorage.setItem('yard_app_version', APP_VERSION);
             launchPortalDashboard();
         }
-    }
+
 
     function launchPortalDashboard() {
         document.getElementById('screen-login').classList.add('hidden');
