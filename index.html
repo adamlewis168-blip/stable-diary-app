@@ -177,7 +177,7 @@
         if(payload) config.body = JSON.stringify(payload);
         return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
     }
-    function fetchHorses() {
+        function fetchHorses() {
         apiCall('horses', 'GET').then(data => {
             const list = document.getElementById('horses-list'); if(!list) return;
             const filtered = activeUser.role === 'admin' ? data : data.filter(h => h.owner_username === activeUser.username);
@@ -291,3 +291,4 @@
 </script>
 </body>
 </html>
+
