@@ -254,7 +254,6 @@
                 return;
             }
             
-            // Checks table array safety
             const filtered = activeUser.role === 'admin' ? data : data.filter(h => h.owner_username === activeUser.username);
             list.innerHTML = filtered.length === 0 ? "<p>No registered horses found.</p>" : "";
             
@@ -313,7 +312,7 @@
         });
     }
 
-    // --- CALENDAR WITH MULTI-OWNER SIGN-UP LOGIC ---
+    // --- CALENDAR ---
     function fetchCalendar() {
         apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
         .then(data => {
@@ -426,7 +425,8 @@
             apiCall(`doc_compliance?username=eq.${activeUser.username}`, 'GET').then(compliance => {
                 const readDocIds = compliance ? compliance.map(c => c.doc_id.toString()) : [];
                 const list = document.getElementById('vault-list');
-if(!list) return;
+                if(!list) return;
+Use code with caution.
 list.innerHTML = (!docs || docs.length === 0) ? "No files found." : "";
 if(docs && docs.length > 0) {
 docs.forEach(doc => {
@@ -447,7 +447,7 @@ doc_url: document.getElementById('vault-url-in').value
 };
 apiCall('document_vault', 'POST', payload).then(() => fetchVaultDocs());
 }
-// --- NEW ADMINISTRATIVE LIVERY ACCOUNT GENERATOR ---
+// --- NEW ADMINISTRATIVE ACCOUNT GENERATOR ---
 window.createNewUserAccount = function() {
 const payload = {
 username: document.getElementById('new-user-username').value.trim().toLowerCase(),
