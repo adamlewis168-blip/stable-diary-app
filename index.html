@@ -9,86 +9,69 @@
     <meta http-equiv="Expires" content="0">
     <meta name="mobile-web-app-capable" content="yes">
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #1d1d1f; }
+        body { font-family: -apple-system, sans-serif; background: #f5f5f7; margin: 0; padding: 20px; color: #1d1d1f; }
         .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        h1, h2, h3 { text-align: center; color: #1c3d5a; margin-top: 5px; }
+        h1, h2, h3 { text-align: center; color: #1c3d5a; }
         .hidden { display: none !important; }
         .btn { display: block; width: 100%; padding: 15px; font-size: 16px; border: none; border-radius: 12px; background: #0071e3; color: white; cursor: pointer; font-weight: 600; text-align: center; margin-top: 15px; box-sizing: border-box; }
         .btn:hover { background: #005bb5; }
         .btn-secondary { background: #e8e8ed; color: #1d1d1f; margin-top: 10px; }
         .btn-action { background: #34c759; color: white; padding: 6px 12px; border: none; border-radius: 8px; font-size: 13px; float: right; cursor: pointer; }
-        .btn-join { background: #ff9500; color: white; padding: 5px 10px; border: none; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; float: right; margin-top:-25px; }
-        .input-field { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 15px; box-sizing: border-box; background: white; }
+        .input-field { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #e8e8ed; border-radius: 12px; font-size: 15px; box-sizing: border-box; }
         .tab-menu { display: flex; justify-content: space-around; border-bottom: 2px solid #e8e8ed; margin-bottom: 20px; }
         .tab-menu .tab-btn { background: none; border: none; padding: 10px 5px; font-size: 13px; font-weight: 600; color: #86868b; cursor: pointer; }
         .tab-menu .tab-btn.active { color: #0071e3; border-bottom: 3px solid #0071e3; }
         .card { background: #f5f5f7; padding: 15px; border-radius: 12px; margin-bottom: 12px; border-left: 5px solid #0071e3; overflow: hidden; position: relative; }
         .card.manager-card { border-left-color: #ff9500; background: #fffcf7; }
         .card.completed-card { border-left-color: #34c759; background: #f4faf5; opacity: 0.7; }
-        .badge-joinable { background: #e3f2fd; color: #0071e3; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 6px; display: inline-block; margin-bottom: 5px; }
-        .status-msg { text-align: center; font-size: 12px; color: #86868b; margin-top: 10px; }
     </style>
 </head>
 <body>
 <div class="container">
-    
-    <!-- LOGIN VIEW -->
+    <!-- SCREEN 1: LOGIN -->
     <div id="screen-login">
         <h1>🐴 Nine Gates EC</h1>
         <h2>Yard Management Login</h2>
         <input type="text" id="login-username" class="input-field" placeholder="Username (adam, coleen, erin)">
         <input type="password" id="login-pin" class="input-field" placeholder="Security PIN Code">
         <button class="btn" onclick="executeDatabaseLogin()">Sign In</button>
-        <div id="login-error" style="color: red; text-align:center; font-size:13px; margin-top:10px;"></div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
+    <!-- SCREEN 2: MAIN DASHBOARD -->
     <div id="screen-main" class="hidden">
         <h1 id="portal-title">Nine Gates Portal</h1>
-        <div id="status-text" class="status-msg">Connecting...</div>
-        
         <div class="tab-menu">
             <button id="tab-diary-btn" class="tab-btn active" onclick="switchTab('diary')">📅 Calendar</button>
             <button id="tab-horses-btn" class="tab-btn" onclick="switchTab('horses')">🐴 Horses</button>
-            <button id="tab-rota-btn" class="tab-btn" onclick="switchTab('rota')">👑 Manager Rota</button>
-            <button id="tab-vault-btn" class="tab-btn" onclick="switchTab('vault')">📂 Doc Vault</button>
+            <button id="tab-rota-btn" class="tab-btn" onclick="switchTab('rota')">👑 Rota</button>
+            <button id="tab-vault-btn" class="tab-btn" onclick="switchTab('vault')">📂 Docs</button>
         </div>
-        <!-- TAB 1: CALENDAR -->
+        
+        <!-- TAB 1: CALENDAR VIEW -->
         <div id="tab-diary">
-            <h3>📅 Shared Yard Activity Log</h3>
-            <div id="diary-list">Loading events...</div>
-            <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
-            <h3>Log Entry / Arena Booking</h3>
+            <div id="diary-list"></div><hr>
+            <h3>Add Entry</h3>
             <select id="diary-facility" class="input-field">
-                <option value="Main Manege Booking">Main Manege Booking 🏟️</option>
-                <option value="Small Manege Booking">Small Manege Booking 🪵</option>
-                <option value="Farrier Visit">Farrier On-Site 🛠️</option>
-                <option value="Vet / Medical">Vet / Treatment Room 🩺</option>
-                <option value="General Yard Event">General Stable Event 🗓️</option>
+                <option value="Main Manege Booking">Main Manege 🏟️</option>
+                <option value="Small Manege Booking">Small Manege 🪵</option>
+                <option value="Farrier Visit">Farrier 🛠️</option>
+                <option value="Vet / Medical">Vet 🩺</option>
             </select>
             <input type="date" id="diary-date" class="input-field">
             <input type="time" id="diary-time" class="input-field">
-            <input type="text" id="diary-title" class="input-field" placeholder="Event Summary Title">
-            <input type="text" id="diary-notes" class="input-field" placeholder="Notes (Farrier details, horse names)">
-            
-            <label style="font-size:14px; font-weight:bold; display:block; margin: 10px 0; color:#1c3d5a;">
-                <input type="checkbox" id="diary-allow-signups"> Allow other owners to sign up their horses 🐴
-            </label>
-            
+            <input type="text" id="diary-title" class="input-field" placeholder="Title">
+            <input type="text" id="diary-notes" class="input-field" placeholder="Notes">
+            <label><input type="checkbox" id="diary-allow-signups"> Allow others to join 🐴</label>
             <button class="btn" onclick="saveDiaryEntry()">Add to Calendar</button>
         </div>
-
         <!-- TAB 2: PRIVACY ISOLATED HORSES -->
         <div id="tab-horses" class="hidden">
-            <h3>🐴 Registered Horse Profiles</h3>
-            <div id="horses-list">Loading profiles...</div>
-            <div id="admin-horse-section" class="hidden">
-                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
-                <h3 style="color:#ff9500;">Upload New Horse Profile</h3>
-                <input type="text" id="horse-name-in" class="input-field" placeholder="Horse Name">
+            <div id="horses-list"></div>
+            <div id="admin-horse-section" class="hidden"><hr>
+                <h3>Register Horse</h3>
+                <input type="text" id="horse-name-in" class="input-field" placeholder="Name">
                 <input type="text" id="horse-owner-in" class="input-field" placeholder="Owner Username">
-                <input type="number" id="horse-age-in" class="input-field" placeholder="Horse Age (years)">
-                
+                <input type="number" id="horse-age-in" class="input-field" placeholder="Age">
                 <select id="horse-sex-in" class="input-field">
                     <option value="Gelding">Gelding</option>
                     <option value="Gelding (R)">Gelding (R)</option>
@@ -99,369 +82,212 @@
                     <option value="Foal (M)">Foal (M)</option>
                     <option value="Foal (F)">Foal (F)</option>
                 </select>
-                
-                <input type="text" id="horse-feed-in" class="input-field" placeholder="Feed Instructions">
-                <input type="text" id="horse-rug-in" class="input-field" placeholder="Rug Instructions">
+                <input type="text" id="horse-feed-in" class="input-field" placeholder="Feed">
+                <input type="text" id="horse-rug-in" class="input-field" placeholder="Rugs">
                 <button class="btn" style="background:#ff9500;" onclick="saveHorseProfile()">Register Horse</button>
             </div>
         </div>
 
         <!-- TAB 3: MANAGER ROTA -->
         <div id="tab-rota" class="hidden">
-            <h3 style="color:#ff9500;">👑 Internal Manager Rota Dashboard</h3>
-            <div id="rota-list">Loading tasks...</div>
-            <div id="admin-rota-section">
-                <hr style="border: 0; border-top: 1px solid #e8e8ed; margin: 20px 0;">
-                <h3>Allocate Manager Task</h3>
+            <div id="rota-list"></div>
+            <div id="admin-rota-section"><hr>
+                <h3>Assign Task</h3>
                 <input type="date" id="rota-date" class="input-field">
-                <input type="text" id="rota-name" class="input-field" placeholder="Task Detail">
+                <input type="text" id="rota-name" class="input-field" placeholder="Task">
                 <select id="rota-assign" class="input-field">
-                    <option value="Adam">Adam 👨</option>
-                    <option value="Coleen">Coleen 👩</option>
-                    <option value="Erin">Erin 👩</option>
+                    <option value="Adam">Adam</option>
+                    <option value="Coleen">Coleen</option>
+                    <option value="Erin">Erin</option>
                 </select>
-                <button class="btn" style="background:#ff9500;" onclick="saveRotaTask()">Assign Task</button>
+                <button class="btn" style="background:#ff9500;" onclick="saveRotaTask()">Assign</button>
             </div>
         </div>
 
-        <!-- TAB 4: DOCUMENT COMPLIANCE VAULT -->
+        <!-- TAB 4: DOCUMENT COMPLIANCE VAULT & USER ACCOUNT CREATION -->
         <div id="tab-vault" class="hidden">
-            <h3>📂 Policies & Operational Procedures</h3>
-            <div id="vault-list">Loading compliance tracker...</div>
-            
-            <!-- ADMIN USER CREATION HUB ADDED HERE -->
-            <div id="admin-vault-section" class="hidden">
-                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 20px 0;">
-                <h3 style="color:#ff9500;">Upload Procedure Document</h3>
-                <input type="text" id="vault-title-in" class="input-field" placeholder="Document Name">
-                <input type="text" id="vault-url-in" class="input-field" placeholder="Paste Web Link">
-                <button class="btn" style="background:#ff9500;" onclick="saveVaultDoc()">Publish Document</button>
-                
-                <hr style="border: 0; border-top: 2px dashed #ff9500; margin: 25px 0;">
-                <h3 style="color:#ff9500;">👥 Create New Livery Account</h3>
-                <p style="font-size:12px; color:#86868b; text-align:center; margin-top:-5px;">Add users instantly to the database</p>
-                <input type="text" id="new-user-username" class="input-field" placeholder="Username (lowercase, no spaces - e.g. sarah)">
-                <input type="text" id="new-user-name" class="input-field" placeholder="Display Name (e.g. Sarah M)">
-                <input type="text" id="new-user-pin" class="input-field" placeholder="4-Digit Access PIN">
-                <button class="btn" style="background:#0071e3;" onclick="createNewUserAccount()">Add Livery Account</button>
+            <div id="vault-list"></div>
+            <div id="admin-vault-section" class="hidden"><hr>
+                <h3>Publish Document</h3>
+                <input type="text" id="vault-title-in" class="input-field" placeholder="Name">
+                <input type="text" id="vault-url-in" class="input-field" placeholder="Link">
+                <button class="btn" style="background:#ff9500;" onclick="saveVaultDoc()">Publish</button>
+                <hr>
+                <h3>👥 Create User</h3>
+                <input type="text" id="new-user-username" class="input-field" placeholder="Username">
+                <input type="text" id="new-user-name" class="input-field" placeholder="Display Name">
+                <input type="text" id="new-user-pin" class="input-field" placeholder="4-Digit PIN">
+                <button class="btn" onclick="createNewUserAccount()">Add Account</button>
             </div>
         </div>
-
-        <button class="btn btn-secondary" style="margin-top:25px;" onclick="logOutPortal()">Sign Out</button>
+        <button class="btn btn-secondary" onclick="logOutPortal()">Sign Out</button>
     </div>
 </div>
 <script>
     const SUPABASE_URL = "https://supabase.co";
     const SUPABASE_KEY = "sb_publishable_d5zidl919MKlzxB2sLMvtg_NF_N77qz";
-    const APP_VERSION = "1.2.1"; 
-    let activeUser = null;
+    const APP_VERSION = "1.4.0"; let activeUser = null;
 
     function executeDatabaseLogin() {
         const u = document.getElementById('login-username').value.trim().toLowerCase();
         const p = document.getElementById('login-pin').value.trim();
-        
-        if (!u || !p) {
-            document.getElementById('login-error').innerText = "❌ Fields cannot be empty.";
-            return;
-        }
-
-        document.getElementById('login-error').innerText = "Verifying gate codes...";
-
+        if (!u || !p) return alert("Enter credentials!");
         apiCall(`user_accounts?username=eq.${u}`, 'GET').then(data => {
             if (data && data.length > 0 && data[0].pin_code === p) {
-                activeUser = { 
-                    username: data[0].username, 
-                    display_name: data[0].display_name, 
-                    role: data[0].role 
-                };
+                activeUser = { username: data[0].username, display_name: data[0].display_name, role: data[0].role };
                 localStorage.setItem('yard_session_user', JSON.stringify(activeUser));
                 localStorage.setItem('yard_app_version', APP_VERSION);
                 launchPortalDashboard();
-            } else {
-                document.getElementById('login-error').innerText = "❌ Incorrect username or security PIN.";
-            }
-        }).catch(() => {
-            document.getElementById('login-error').innerText = "⚠️ Network offline or configuration error.";
+            } else { alert("❌ Incorrect details."); }
         });
     }
 
     window.onload = function() {
-        const savedVersion = localStorage.getItem('yard_app_version');
-        if (savedVersion && savedVersion !== APP_VERSION) {
-            localStorage.clear();
-            location.reload(true);
-            return;
-        }
-        const cachedUser = localStorage.getItem('yard_session_user');
-        if (cachedUser) {
-            activeUser = JSON.parse(cachedUser);
-            launchPortalDashboard();
-        }
+        const v = localStorage.getItem('yard_app_version');
+        if (v && v !== APP_VERSION) { localStorage.clear(); location.reload(true); return; }
+        const cached = localStorage.getItem('yard_session_user');
+        if (cached) { activeUser = JSON.parse(cached); launchPortalDashboard(); }
     }
 
     function launchPortalDashboard() {
         document.getElementById('screen-login').classList.add('hidden');
         document.getElementById('screen-main').classList.remove('hidden');
         const isAdmin = activeUser.role === 'admin';
-        document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Yard Portal 🐴";
+        document.getElementById('portal-title').innerText = isAdmin ? "Nine Gates Manager 👑" : "Nine Gates Portal 🐴";
         document.getElementById('tab-rota-btn').className = isAdmin ? "tab-btn" : "hidden";
         document.getElementById('admin-rota-section').className = isAdmin ? "" : "hidden";
         document.getElementById('admin-vault-section').className = isAdmin ? "" : "hidden";
         document.getElementById('admin-horse-section').className = isAdmin ? "" : "hidden";
-        
-        fetchCalendar();
-        fetchVaultDocs();
-        fetchHorses();
-        if(isAdmin) fetchManagerRota();
+        fetchCalendar(); fetchVaultDocs(); fetchHorses(); if(isAdmin) fetchManagerRota();
     }
 
-    function logOutPortal() {
-        localStorage.clear();
-        location.reload();
-    }
+    function logOutPortal() { localStorage.clear(); location.reload(); }
 
     function switchTab(tab) {
         ['diary', 'horses', 'rota', 'vault'].forEach(t => {
-            const el = document.getElementById('tab-' + t);
-            const btn = document.getElementById('tab-' + t + '-btn');
-            if(el) el.classList.add('hidden');
-            if(btn) btn.classList.remove('active');
+            document.getElementById('tab-' + t).classList.add('hidden');
+            document.getElementById('tab-' + t + '-btn').classList.remove('active');
         });
         document.getElementById('tab-' + tab).classList.remove('hidden');
-        if(document.getElementById('tab-' + tab + '-btn')) {
-            document.getElementById('tab-' + tab + '-btn').className = 'tab-btn active';
-        }
+        document.getElementById('tab-' + tab + '-btn').className = 'tab-btn active';
     }
 
     function apiCall(endpoint, method, payload = null) {
-        const config = {
-            method: method,
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
-        };
+        const config = { method: method, headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } };
         if(payload) config.body = JSON.stringify(payload);
-        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config)
-            .then(res => res.json())
-            .catch(err => console.error("API error:", err));
+        return fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, config).then(res => res.json());
     }
-    // --- MODULE: ISOLATED HORSES PROFILES ---
     function fetchHorses() {
-        const list = document.getElementById('horses-list');
-        if(!list) return;
-        
         apiCall('horses', 'GET').then(data => {
-            if (data && data.code) {
-                list.innerHTML = `<p style="color:red; font-weight:bold;">⚠️ Database Error: ${data.message}</p>`;
-                return;
-            }
-            
+            const list = document.getElementById('horses-list'); if(!list) return;
             const filtered = activeUser.role === 'admin' ? data : data.filter(h => h.owner_username === activeUser.username);
-            list.innerHTML = filtered.length === 0 ? "<p>No registered horses found.</p>" : "";
-            
+            list.innerHTML = filtered.length === 0 ? "<p>No horses found.</p>" : "";
             filtered.forEach(item => {
                 list.innerHTML += `<div class="card ${activeUser.role === 'admin' ? 'manager-card' : ''}">
-                    <h4>🐴 ${item.name || 'Unnamed Horse'}</h4>
-                    <p><strong>Owner:</strong> ${item.owner_username || 'Unassigned'}</p>
-                    <p><strong>Age:</strong> ${item.age ? item.age + ' years' : 'Not set'}</p>
-                    <p><strong>Sex/Class:</strong> <span style="color:#0071e3; font-weight:bold;">${item.classification || 'Gelding'}</span></p>
-                    
-                    <p style="margin-top:5px; font-size:12px; font-weight:bold; color:#1c3d5a;">🥣 Feed Room Rations:</p>
-                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 8px 0;" value="${item.feed_notes || ''}" onchange="updateHorseMetric(${item.id}, 'feed_notes', this.value)">
-                    
-                    <p style="font-size:12px; font-weight:bold; color:#1c3d5a;">🧥 Rug Instructions:</p>
-                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 8px 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
-                    
-                    <p style="font-size:12px; font-weight:bold; color:#1c3d5a;">📝 General Notes & Reminders:</p>
-                    <input type="text" class="input-field" style="padding:8px; margin:2px 0 0 0;" value="${item.other_notes || ''}" placeholder="Type general notes..." onchange="updateHorseMetric(${item.id}, 'other_notes', this.value)">
+                    <h4>🐴 ${item.name || 'Unnamed'}</h4>
+                    <p><strong>Owner:</strong> ${item.owner_username || 'Unassigned'} | <strong>Age:</strong> ${item.age || 'Not set'} | <strong>Class:</strong> ${item.classification || 'Gelding'}</p>
+                    <p style="margin-top:5px;font-size:11px;font-weight:bold;">🥣 Rations:</p>
+                    <input type="text" class="input-field" style="padding:6px;margin:2px 0;" value="${item.feed_notes || ''}" onchange="updateHorseMetric(${item.id}, 'feed_notes', this.value)">
+                    <p style="font-size:11px;font-weight:bold;">🧥 Rugs:</p>
+                    <input type="text" class="input-field" style="padding:6px;margin:2px 0;" value="${item.rug_instructions || ''}" onchange="updateHorseMetric(${item.id}, 'rug_instructions', this.value)">
+                    <p style="font-size:11px;font-weight:bold;">📝 Notes:</p>
+                    <input type="text" class="input-field" style="padding:6px;margin:2px 0;" value="${item.other_notes || ''}" onchange="updateHorseMetric(${item.id}, 'other_notes', this.value)">
                 </div>`;
             });
-        }).catch(() => {
-            list.innerHTML = `<p style="color:red;">⚠️ Network Connection Timeout.</p>`;
         });
     }
 
     function updateHorseMetric(id, field, value) {
-        const payload = {};
-        payload[field] = value;
-        fetch(`${SUPABASE_URL}/rest/v1/horses?id=eq.${id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).then(() => {
-            document.getElementById('status-text').innerText = "✨ Metric Saved Auto-Syncing...";
-            setTimeout(() => { document.getElementById('status-text').innerText = "☁️ Cloud Connected"; }, 2000);
-        });
+        const p = {}; p[field] = value;
+        fetch(`${SUPABASE_URL}/rest/v1/horses?id=eq.${id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
     }
 
     function saveHorseProfile() {
-        const payload = {
-            name: document.getElementById('horse-name-in').value,
-            owner_username: document.getElementById('horse-owner-in').value.trim().toLowerCase(),
-            age: parseInt(document.getElementById('horse-age-in').value) || null,
-            classification: document.getElementById('horse-sex-in').value,
-            feed_notes: document.getElementById('horse-feed-in').value,
-            rug_instructions: document.getElementById('horse-rug-in').value
-        };
-        if(!payload.name || !payload.owner_username) return alert("Horse Name and Owner username are required!");
-        apiCall('horses', 'POST', payload).then(() => {
-            fetchHorses();
-            document.getElementById('horse-name-in').value = "";
-            document.getElementById('horse-owner-in').value = "";
-            document.getElementById('horse-age-in').value = "";
-            document.getElementById('horse-feed-in').value = "";
-            document.getElementById('horse-rug-in').value = "";
-        });
+        const p = { name: document.getElementById('horse-name-in').value, owner_username: document.getElementById('horse-owner-in').value.trim().toLowerCase(), age: parseInt(document.getElementById('horse-age-in').value) || null, classification: document.getElementById('horse-sex-in').value, feed_notes: document.getElementById('horse-feed-in').value, rug_instructions: document.getElementById('horse-rug-in').value };
+        apiCall('horses', 'POST', p).then(() => { fetchHorses(); document.getElementById('horse-name-in').value = ""; });
     }
 
-    // --- CALENDAR ---
     function fetchCalendar() {
-        apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
-        .then(data => {
-            const list = document.getElementById('diary-list');
-            if(!list) return;
-            list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered on the calendar.</p>" : "";
-            
+        apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET').then(data => {
+            const list = document.getElementById('diary-list'); if(!list) return;
+            list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered.</p>" : "";
             data.forEach(item => {
-                let signups = [];
-                try { signups = typeof item.signed_up_horses === 'string' ? JSON.parse(item.signed_up_horses) : item.signed_up_horses; } catch(e) { signups = []; }
-                if (!signups) signups = [];
-                
-                const isJoinable = item.allow_signups === true;
-                
+                let signups = []; try { signups = JSON.parse(item.signed_up_horses); } catch(e) { signups = []; }
+                if (!signups) signups = []; const joinable = item.allow_signups === true;
                 list.innerHTML += `<div class="card">
-                    ${isJoinable ? `<span class="badge-joinable">Shared Event Group 👥</span>` : ''}
-                    ${(isJoinable && !signups.includes(activeUser.display_name)) ? `<button class="btn-join" onclick="window.joinCalendarEvent(${item.id})">Join Slot +</button>` : ''}
-                    
                     <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
-                    <p><strong>Title:</strong> ${item.title}</p>
-                    <p><strong>Notes:</strong> ${item.notes || 'None'}</p>
-                    
-                    ${isJoinable ? `<p style="margin-top:8px; font-size:12px; color:#1c3d5a;"><strong>Signed Up:</strong> ${signups.length === 0 ? 'None yet' : signups.join(', ')}</p>` : ''}
-                    <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
+                    <p><strong>Notes:</strong> ${item.title} - ${item.notes || ''}</p>
+                    ${joinable ? `<p style="font-size:12px;color:#0071e3;"><strong>👥 Signed Up:</strong> \({signups.join(', ') \vert{}\vert{} 'None yet'}</p>\){!signups.includes(activeUser.display_name) ? `<button class="btn-action" style="background:#ff9500;margin-top:-20px;" onclick="joinEvent(${item.id})">Join +</button>` : ''}` : ''}
                 </div>`;
             });
-            document.getElementById('status-text').innerText = "☁️ Cloud Connected";
         });
     }
 
     function saveDiaryEntry() {
-        const payload = {
-            event_type: document.getElementById('diary-facility').value,
-            event_date: document.getElementById('diary-date').value,
-            event_time: document.getElementById('diary-time').value,
-            title: document.getElementById('diary-title').value,
-            notes: document.getElementById('diary-notes').value,
-            allow_signups: document.getElementById('diary-allow-signups').checked,
-            signed_up_horses: JSON.stringify([]),
-            posted_by: activeUser.display_name
-        };
-        if(!payload.event_date || !payload.title) return alert("Date and title are required!");
-        apiCall('shared_calendar', 'POST', payload).then(() => {
-            fetchCalendar();
-            document.getElementById('diary-title').value = "";
-            document.getElementById('diary-notes').value = "";
-            document.getElementById('diary-allow-signups').checked = false;
-        });
+        const p = { event_type: document.getElementById('diary-facility').value, event_date: document.getElementById('diary-date').value, event_time: document.getElementById('diary-time').value, title: document.getElementById('diary-title').value, notes: document.getElementById('diary-notes').value, allow_signups: document.getElementById('diary-allow-signups').checked, signed_up_horses: JSON.stringify([]), posted_by: activeUser.display_name };
+        apiCall('shared_calendar', 'POST', p).then(() => fetchCalendar());
     }
 
-    window.joinCalendarEvent = function(id) {
+    function joinEvent(id) {
         apiCall(`shared_calendar?id=eq.${id}`, 'GET').then(data => {
             if(!data || data.length === 0) return;
-            let currentSignups = [];
-            try { currentSignups = JSON.parse(data[0].signed_up_horses); } catch(e) { currentSignups = []; }
-            if(!currentSignups) currentSignups = [];
-            
-            if(!currentSignups.includes(activeUser.display_name)) {
-                currentSignups.push(activeUser.display_name);
-            }
-            
-            fetch(`${SUPABASE_URL}/rest/v1/shared_calendar?id=eq.${id}`, {
-                method: 'PATCH',
-                headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ signed_up_horses: JSON.stringify(currentSignups) })
-            }).then(() => fetchCalendar());
+            let currentItem = data[0];
+            let s = []; try { s = JSON.parse(currentItem.signed_up_horses); } catch(e) { s = []; }
+            if(!s) s = []; if(!s.includes(activeUser.display_name)) s.push(activeUser.display_name);
+            fetch(`${SUPABASE_URL}/rest/v1/shared_calendar?id=eq.${id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ signed_up_horses: JSON.stringify(s) }) }).then(() => fetchCalendar());
         });
     }
 
-    // --- MANAGER ROTA ---
     function fetchManagerRota() {
         apiCall('manager_rota?order=task_date.asc', 'GET').then(data => {
-            const list = document.getElementById('rota-list');
-            if(!list) return;
-            list.innerHTML = (!data || data.length === 0) ? "<p>No duties scheduled.</p>" : "";
-            if(data && data.length > 0) {
-                data.forEach(item => {
-                    const isDone = item.status === 'Completed';
-                    list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
-                        ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(${item.id})">Done ✓</button>` : ''}
-                        <h4>📋 ${item.task_name}</h4>
-                        <p><strong>Crew:</strong> ${item.assigned_to}</p>
-                    </div>`;
-                });
-            }
+            const list = document.getElementById('rota-list'); if(!list) return;
+            list.innerHTML = (!data || data.length === 0) ? "<p>No tasks.</p>" : "";
+            data.forEach(item => {
+                const isDone = item.status === 'Completed';
+                list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
+                    ${!isDone ? `<button class="btn-action" onclick="completeTask(\${item.id})">Done</button>` : ''}
+                    <h4>📋 ${item.task_name} - ${item.assigned_to}</h4>
+                </div>`;
+            });
         });
     }
 
     function saveRotaTask() {
-        const payload = {
-            task_date: document.getElementById('rota-date').value,
-            task_name: document.getElementById('rota-name').value,
-            assigned_to: document.getElementById('rota-assign').value
-        };
-        if(!payload.task_date || !payload.task_name) return alert("Fields required!");
-        apiCall('manager_rota', 'POST', payload).then(() => fetchManagerRota());
+        const p = { task_date: document.getElementById('rota-date').value, task_name: document.getElementById('rota-name').value, assigned_to: document.getElementById('rota-assign').value };
+        apiCall('manager_rota', 'POST', p).then(() => fetchManagerRota());
     }
 
-    function completeRotaTask(id) {
-        fetch(`${SUPABASE_URL}/rest/v1/manager_rota?id=eq.${id}`, {
-            method: 'PATCH',
-            headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Completed' })
-        }).then(() => fetchManagerRota());
+    function completeTask(id) {
+        fetch(`${SUPABASE_URL}/rest/v1/manager_rota?id=eq.${id}`, { method: 'PATCH', headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'Completed' }) }).then(() => fetchManagerRota());
     }
 
-    // --- COMPLIANCE DOCUMENT VAULT ---
     function fetchVaultDocs() {
         apiCall('document_vault?order=title.asc', 'GET').then(docs => {
-            apiCall(`doc_compliance?username=eq.${activeUser.username}`, 'GET').then(compliance => {
-                const readDocIds = compliance ? compliance.map(c => c.doc_id.toString()) : [];
-                const list = document.getElementById('vault-list');
-                if(!list) return;
-Use code with caution.
-list.innerHTML = (!docs || docs.length === 0) ? "No files found." : "";
-if(docs && docs.length > 0) {
-docs.forEach(doc => {
-const hasRead = readDocIds.includes(doc.id.toString());
-list.innerHTML += <div class="card ${hasRead ? 'completed-card' : ''}"> ${!hasRead ? Mark Read : '<span>Read ✓</span>'} <h4>📂 ${doc.title}</h4> <p><a href="${doc.doc_url}" target="_blank">🔗 View Document</a></p> </div>;
-});
-}
-});
-});
-}
-function markDocAsRead(docId) {
-apiCall('doc_compliance', 'POST', { doc_id: docId, username: activeUser.username }).then(() => fetchVaultDocs());
-}
-function saveVaultDoc() {
-const payload = {
-title: document.getElementById('vault-title-in').value,
-doc_url: document.getElementById('vault-url-in').value
-};
-apiCall('document_vault', 'POST', payload).then(() => fetchVaultDocs());
-}
-// --- NEW ADMINISTRATIVE ACCOUNT GENERATOR ---
-window.createNewUserAccount = function() {
-const payload = {
-username: document.getElementById('new-user-username').value.trim().toLowerCase(),
-display_name: document.getElementById('new-user-name').value.trim(),
-pin_code: document.getElementById('new-user-pin').value.trim(),
-role: 'livery'
-};
-if(!payload.username || !payload.display_name || !payload.pin_code) {
-return alert("All fields must be completed!");
-}
-apiCall('user_accounts', 'POST', payload).then(() => {
-alert(👤 Secure Profile Registered for ${payload.display_name}!);
-document.getElementById('new-user-username').value = "";
-document.getElementById('new-user-name').value = "";
-document.getElementById('new-user-pin').value = "";
-});
-}
+            apiCall(`doc_compliance?username=eq.${activeUser.username}`, 'GET').then(comp => {
+                const readIds = comp ? comp.map(c => c.doc_id.toString()) : [];
+                const list = document.getElementById('vault-list'); if(!list) return;
+                list.innerHTML = docs.length === 0 ? "<p>No files.</p>" : "";
+                docs.forEach(doc => {
+                    const hasRead = readIds.includes(doc.id.toString());
+                    list.innerHTML += `<div class="card ${hasRead ? 'completed-card' : ''}">
+                        ${!hasRead ? `<button class="btn-action" onclick="markRead(\${doc.id})">Mark Read</button>` : '<span>Read ✓</span>'}
+                        <h4>📂 ${doc.title}</h4><p><a href="${doc.doc_url}" target="_blank">🔗 View Document</a></p>
+                    </div>`;
+                });
+            });
+        });
+    }
+
+    function markRead(docId) { apiCall('doc_compliance', 'POST', { doc_id: docId, username: activeUser.username }).then(() => fetchVaultDocs()); }
+    function saveVaultDoc() {
+        apiCall('document_vault', 'POST', { title: document.getElementById('vault-title-in').value, doc_url: document.getElementById('vault-url-in').value }).then(() => fetchVaultDocs());
+    }
+
+    function createNewUserAccount() {
+        const p = { username: document.getElementById('new-user-username').value.trim().toLowerCase(), display_name: document.getElementById('new-user-name').value.trim(), pin_code: document.getElementById('new-user-pin').value.trim(), role: 'livery' };
+        if(!p.username || !p.pin_code) return alert("Fill fields!");
+        apiCall('user_accounts', 'POST', p).then(() => { alert("👤 Registered!"); location.reload(); });
+    }
+</script>
+</body>
+</html>
