@@ -278,6 +278,7 @@
     }
 
     // --- CALENDAR WITH MULTI-OWNER SIGN-UP LOGIC ---
+        // --- CALENDAR ACTIVITIES WITH BULLETPROOF ERROR CHECKING ---
     function fetchCalendar() {
         apiCall('shared_calendar?order=event_date.asc,event_time.asc', 'GET')
         .then(data => {
@@ -285,25 +286,36 @@
             if(!list) return;
             list.innerHTML = (!data || data.length === 0) ? "<p>No entries registered on the calendar.</p>" : "";
             
-            data.forEach(item => {
-                let signups = [];
-                try { signups = typeof item.signed_up_horses === 'string' ? JSON.parse(item.signed_up_horses) : item.signed_up_horses; } catch(e) { signups = []; }
-                if (!signups) signups = [];
-                
-                const isJoinable = item.allow_signups === true;
-                
-                list.innerHTML += `<div class="card">
-                    ${isJoinable ? `<span class="badge-joinable">Shared Event Group 👥</span>` : ''}
-                    ${(isJoinable && !signups.includes(activeUser.display_name)) ? `<button class="btn-join" onclick="joinCalendarEvent(${item.id}, '${item.signed_up_horses.replace(/'/g, "\\'")}')">Join Slot +</button>` : ''}
+            if (data && data.length > 0) {
+                data.forEach(item => {
+                    let signups = [];
+                    // SAFETY CHECK: Ensure the field isn't empty or null before parsing text
+                    let rawSignups = item.signed_up_horses || '[]';
                     
-                    <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
-                    <p><strong>Title:</strong> ${item.title}</p>
-                    <p><strong>Notes:</strong> ${item.notes || 'None'}</p>
+                    try { 
+                        signups = typeof rawSignups === 'string' ? JSON.parse(rawSignups) : rawSignups; 
+                    } catch(e) { 
+                        signups = []; 
+                    }
+                    if (!signups) signups = [];
                     
-                    ${isJoinable ? `<p style="margin-top:8px; font-size:12px; color:#1c3d5a;"><strong>Signed Up Horses/Riders:</strong> ${signups.length === 0 ? 'None yet' : signups.join(', ')}</p>` : ''}
-                    <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
-                </div>`;
-            });
+                    const isJoinable = item.allow_signups === true;
+                    // SAFETY CHECK: Prevent the text-replace crash if the string is empty
+                    const cleanJsonString = String(rawSignups).replace(/'/g, "\\'");
+                    
+                    list.innerHTML += `<div class="card">
+                        ${isJoinable ? `<span class="badge-joinable">Shared Event Group 👥</span>` : ''}
+                        ${(isJoinable && !signups.includes(activeUser.display_name)) ? `<button class="btn-join" onclick="window.joinCalendarEvent(item.id, '{cleanJsonString}')">Join Slot +</button>` : ''}
+                        
+                        <h4>📅 ${item.event_date} @ ${item.event_time.slice(0,5)} - ${item.event_type}</h4>
+                        <p><strong>Title:</strong> ${item.title}</p>
+                        <p><strong>Notes:</strong> ${item.notes || 'None'}</p>
+                        
+                        ${isJoinable ? `<p style="margin-top:8px; font-size:12px; color:#1c3d5a;"><strong>Signed Up Horses/Riders:</strong> \${signups.length === 0 ? 'None yet' : signups.join(', ')}</p>` : ''}
+                        <p style="font-size:11px; margin-top:4px; color:#b8b8bc;">Logged by: ${item.posted_by}</p>
+                    </div>`;
+                });
+            }
             document.getElementById('status-text').innerText = "☁️ Cloud Connected";
         });
     }
@@ -333,7 +345,6 @@
         try { currentSignups = JSON.parse(existingJson); } catch(e) { currentSignups = []; }
         if(!currentSignups) currentSignups = [];
         
-        // Append current logged-in user name to the array stack
         if(!currentSignups.includes(activeUser.display_name)) {
             currentSignups.push(activeUser.display_name);
         }
@@ -355,7 +366,7 @@
                 data.forEach(item => {
                     const isDone = item.status === 'Completed';
                     list.innerHTML += `<div class="card ${isDone ? 'completed-card' : 'manager-card'}">
-                        ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(${item.id})">Done ✓</button>` : ''}
+                        ${!isDone ? `<button class="btn-action" onclick="completeRotaTask(\${item.id})">Done ✓</button>` : ''}
                         <h4>📋 ${item.task_name}</h4>
                         <p><strong>Crew:</strong> ${item.assigned_to}</p>
                     </div>`;
@@ -389,23 +400,32 @@
                 const readDocIds = compliance ? compliance.map(c => c.doc_id.toString()) : [];
                 const list = document.getElementById('vault-list');
                 if(!list) return;
-list.innerHTML = (!docs || docs.length === 0) ? "No files found." : "";
-if(docs && docs.length > 0) {
-docs.forEach(doc => {
-const hasRead = readDocIds.includes(doc.id.toString());
-list.innerHTML += <div class="card ${hasRead ? 'completed-card' : ''}"> ${!hasRead ? Mark Read : '<span>Read ✓</span>'} <h4>📂 ${doc.title}</h4> <p><a href="${doc.doc_url}" target="_blank">🔗 View Document</a></p> </div>;
-});
-}
-});
-});
-}
-function markDocAsRead(docId) {
-apiCall('doc_compliance', 'POST', { doc_id: docId, username: activeUser.username }).then(() => fetchVaultDocs());
-}
-function saveVaultDoc() {
-const payload = {
-title: document.getElementById('vault-title-in').value,
-doc_url: document.getElementById('vault-url-in').value
-};
-apiCall('document_vault', 'POST', payload).then(() => fetchVaultDocs());
-}
+                list.innerHTML = (!docs || docs.length === 0) ? "<p>No files found.</p>" : "";
+                if(docs && docs.length > 0) {
+                    docs.forEach(doc => {
+                        const hasRead = readDocIds.includes(doc.id.toString());
+                        list.innerHTML += `<div class="card ${hasRead ? 'completed-card' : ''}">
+                            ${!hasRead ? `<button class="btn-action" onclick="markDocAsRead(\${doc.id})">Mark Read</button>` : '<span>Read ✓</span>'}
+                            <h4>📂 ${doc.title}</h4>
+                            <p><a href="${doc.doc_url}" target="_blank">🔗 View Document</a></p>
+                        </div>`;
+                    });
+                }
+            });
+        });
+    }
+
+    function markDocAsRead(docId) {
+        apiCall('doc_compliance', 'POST', { doc_id: docId, username: activeUser.username }).then(() => fetchVaultDocs());
+    }
+
+    function saveVaultDoc() {
+        const payload = {
+            title: document.getElementById('vault-title-in').value,
+            doc_url: document.getElementById('vault-url-in').value
+        };
+        apiCall('document_vault', 'POST', payload).then(() => fetchVaultDocs());
+    }
+</script>
+</body>
+</html>
